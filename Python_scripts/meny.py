@@ -1,6 +1,7 @@
 import subprocess
 import sys
 import json
+import ctypes
 
 
 
@@ -24,6 +25,12 @@ main_menu_text = """
 |                                                        |
 |________________________________________________________|
 """
+def is_admin():
+    try:
+        return ctypes.windll.shell32.IsUserAnAdmin()
+    except:
+        return False
+
 def list_vm():
     powershell_command = 'Get-VM | Select-Object Name, State, MemoryAssigned, ProcessorCount | ConvertTo-Json -Compress'
     result = subprocess.run(['powershell', '-Command', powershell_command], capture_output=True, text=True)
