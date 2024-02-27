@@ -1,5 +1,6 @@
 import subprocess
 import sys
+import json
 
 
 
@@ -23,22 +24,36 @@ main_menu_text = """
 |                                                        |
 |________________________________________________________|
 """
-## Gather input data for adding new user.
-def create_vm():
-    # Get input from the user
-    VMName = input("Enter VM Name: ")
+def list_vm():
+    powershell_command = 'Get-VM | Select-Object Name, State, MemoryAssigned, ProcessorCount | ConvertTo-Json -Compress'
+    result = subprocess.run(['powershell', '-Command', powershell_command], capture_output=True, text=True)
+    vm_info = json.loads(result.stdout)
+    print(vm_info)
 
-def powershell_script(fname, lname, ou, OS, phone):
-    powershell_login = f'New-PsSession -Computername mlm-dc -Credential New-Object System.Management.Automation.PSCredential("mlm.lab\administrator, Linux4Ever)'
-    userdir = f'\\\\10.6.67.151\\E\\Shared\\{ou}\\{fname.lower()}.{lname.lower()}'
-    powershell_aduser = f'New-ADUser -Name "{fname} {lname}" -DisplayName "{fname} {lname}" -SamAccountName "{fname[0].lower()}{lname.lower()}" -OfficePhone "{phone}" -UserPrincipalName "{fname[0].lower()}{lname.lower()}@mlm.lab" -GivenName "{fname}" -Surname "{lname}" -Description "{ou}" -AccountPassword (ConvertTo-SecureString "Linux4Ever" -AsPlainText -Force) -Enabled $true -Path "OU={ou},DC=mlm,DC=lab" -ChangePasswordAtLogon $true –PasswordNeverExpires $false -Server MLM-DC.mlm.lab'
-    powershell_addir = f'If (-not(Test-Path -Path "{userdir}")) {{ New-Item -Path "{userdir}" -ItemType Directory }}'
-    subprocess.run(["powershell", "-Command", powershell_login])
-    subprocess.run(["powershell", "-Command", powershell_aduser])
-    subprocess.run(["powershell", "-Command", powershell_addir])
-    print(f"User {fname} {lname} successfully created. Returning to main menu in 5 seconds.")
+
+def create_vm():
+    VMName = input("Enter a VM name: ")
     
-    main()
+    RAM = "8GB"
+    SwitchName = "Internet"
+    CPUCount = 2
+    MotherVHD = "C:\\Production\\Motherdisk.vhdx"
+    DataVHD = f"C:\\Production\\{VMName}.vhdx"
+
+    # PowerShell commands
+    commands = [
+        f'New-VHD -ParentPath "{MotherVHD}" -Path "{DataVHD}" -Differencing',
+        f'New-VM -VHDPath "{DataVHD}" -MemoryStartupBytes {RAM} -Name "{VMName}" -SwitchName "{SwitchName}"',
+        f'Set-VM -Name "{VMName}" -ProcessorCount {CPUCount}',
+        f'Set-VMMemory "{VMName}" -DynamicMemoryEnabled $true'
+    ]
+
+    # Execute PowerShell commands
+    for command in commands:
+        subprocess.run(['powershell', '-Command', command], capture_output=True)
+
+    print(f"Virtual machine {VMName} created successfully.")
+
 
 
 
@@ -56,11 +71,8 @@ def main():
     while True:
         option = user_option()
         if option == 1:
-            create_vm()
+            list_vm()
         elif option == 2:
-            exit()
+            create_vm()
             
 main()
-
-
-"Hello world"
