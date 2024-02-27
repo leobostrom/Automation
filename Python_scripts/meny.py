@@ -37,8 +37,8 @@ def create_vm():
     RAM = "8GB"
     SwitchName = "Internet"
     CPUCount = 2
-    MotherVHD = "C:\\Production\\Motherdisk.vhdx"
-    DataVHD = f"C:\\Production\\{VMName}.vhdx"
+    MotherVHD = "C:\\Production\\VHD\\Motherdisk.vhdx"
+    DataVHD = f"C:\\Production\\VM\\{VMName}.vhdx"
 
     # PowerShell commands
     commands = [
