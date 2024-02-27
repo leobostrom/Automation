@@ -74,5 +74,8 @@ def main():
             list_vm()
         elif option == 2:
             create_vm()
+        elif option == 7:
+            print("Quiting...")
+            exit()
             
 main()
