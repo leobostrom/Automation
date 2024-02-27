@@ -34,7 +34,7 @@ def list_vm():
 def create_vm():
     VMName = input("Enter a VM name: ")
     
-    RAM = "8GB"
+    RAM = "4GB"
     SwitchName = "Internet"
     CPUCount = 2
     MotherVHD = "C:\\Production\\VHD\\Motherdisk.vhdx"
