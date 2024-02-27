@@ -2,9 +2,7 @@ import subprocess
 import sys
 import json
 import ctypes
-import from utils
-
-
+from utils import *
 
 main_menu_text = """
  ________________________________________________________
@@ -30,13 +28,6 @@ def is_admin():
         return ctypes.windll.shell32.IsUserAnAdmin()
     except:
         return False
-
-def list_vm():
-    powershell_command = 'Get-VM | Select-Object Name, State, MemoryAssigned, ProcessorCount | ConvertTo-Json -Compress'
-    result = subprocess.run(['powershell', '-Command', powershell_command], capture_output=True, text=True)
-    vm_info = json.loads(result.stdout)
-    print(vm_info)
-
 
 def create_vm():
     VMName = input("Enter a VM name: ")
@@ -78,7 +69,8 @@ def main():
     while True:
         option = user_option()
         if option == 1:
-            list_vm()
+            powershell_command = 'Get-VM | Select-Object Name, State | ConvertTo-Json -Compress'
+            show_list(powershell_command)
         elif option == 2:
             create_vm()
         elif option == 7:

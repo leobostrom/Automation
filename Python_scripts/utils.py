@@ -19,5 +19,5 @@ def show_list(powershell_command):
     print(df)
 
 # Anropa funktionen med ditt PowerShell-kommando som argument
-#powershell_command = 'Get-VM | Select-Object Name, State, CPUusage, Memoryusage | ConvertTo-Json -Compress'
+#powershell_command = 'Get-VM | Select-Object Name, State, CPUusage | ConvertTo-Json -Compress'
 #show_list(powershell_command)
