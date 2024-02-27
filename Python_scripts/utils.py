@@ -27,32 +27,33 @@ def create_vm():
 
 
 def show_list(powershell_command):
-    # Kör PowerShell-kommandot och fånga resultatet
+    # Run the PowerShell command
     result = subprocess.run(['powershell', '-Command', powershell_command], capture_output=True, text=True)
 
-    # Konvertera JSON-resultatet till en Python-dictionary
+    # Convert the JSON result to a Python dictionary
     vm_info = json.loads(result.stdout)
 
-    # Lägg till index till varje element i listan
+    # Add index to each element in the list
     vm_info_index = [(i+1, *vm.values()) for i, vm in enumerate(vm_info)]
 
-    # Visa data som en tabell med hjälp av tabulate
+    # Display data as a table using tabulate
     headers = ["Index"] + list(vm_info[0].keys())
     print(tabulate(vm_info_index, headers=headers, tablefmt="fancy_grid"))
     return vm_info_index
 
-def select_VM(vm_info_index):
-    # Låt användaren välja ett objekt
+
+def select_vm(vm_info_index):
+    # Allow the user to select an object
     index = int(input("Ange index för det önskade objektet: ")) - 1
 
-    # Kontrollera om indexet är giltigt
+    # Check if the index is valid
     if 0 <= index < len(vm_info_index):
         user_choice = vm_info_index[index][1]  # Sätt namnet på det valda objektet i user_choice
         print("Du valde:", user_choice)
     else:
         print("Ogiltigt index. Var vänlig ange ett giltigt index.")
 
-# Anropa funktionen med ditt PowerShell-kommando som argument
+# Anropa funktionen med PowerShell-kommando som argument
 #powershell_command = "Get-VM | Select-Object Name, @{Name='State';Expression={$_.State.ToString()}}, CPUusage, @{Name='MemoryAssigned';Expression={$_.MemoryAssigned / 1MB}} | ConvertTo-Json -Compress"
 #vm_info_index = show_list(powershell_command)
-#select_VM(vm_info_index)
+#select_vm(vm_info_index)

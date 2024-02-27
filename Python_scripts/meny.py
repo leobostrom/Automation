@@ -49,5 +49,5 @@ def main():
         elif option == 7:
             print("Quiting...")
             exit()
-            
+
 main()
