@@ -56,7 +56,14 @@ def main():
             main()
 
         elif option == 2:
+            clear_screen()
+            list_vm()
             create_vm()
+            clear_screen()
+            list_vm()
+            pause()
+            main()
+
         elif option == 7:
             print("Quiting...")
             exit()
