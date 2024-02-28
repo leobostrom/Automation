@@ -60,6 +60,7 @@ def select_vm(vm_info_index):
     if 0 <= index < len(vm_info_index):
         user_choice = vm_info_index[index][1]  # Sätt namnet på det valda objektet i user_choice
         print("Du valde:", user_choice)
+        return(user_choice)
     else:
         print("Ogiltigt index. Var vänlig ange ett giltigt index.")
 
@@ -68,8 +69,8 @@ def select_vm(vm_info_index):
 #vm_info_index = show_list(powershell_command)
 #select_vm(vm_info_index)
         
-def configure_vm_network():
-    vm_name = input("Enter the VM name: ")   
+def configure_vm_network(user_choice):
+    vm_name = user_choice
     print(f"Configuring VM '{vm_name}'...")
     
     ip_address = input("Enter what IP Address: ")
@@ -85,7 +86,7 @@ def configure_vm_network():
         TZUtil /s $TimeZone
         Rename-Computer -NewName $VMName -Confirm:$False
 
-        New-NetIPAddress -InterfaceAlias "Ethernet" _IPAddress $IPAdd -PrefixLength 24 -DefaultGateway $Gateway
+        New-NetIPAddress -InterfaceAlias "Ethernet" -IPAddress $IPAdd -PrefixLength 24 -DefaultGateway $Gateway
         Set-DnsClientServerAddress -InterfaceAlias "Ethernet" -ServerAddresses $DNSAdd
     '''])
 

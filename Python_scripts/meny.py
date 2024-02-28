@@ -42,6 +42,7 @@ def user_option():
 
 ## This runs the program
 def main():
+    vm_info_index = show_list("Get-VM | Select-Object Name, @{Name='State';Expression={$_.State.ToString()}}, CPUusage, @{Name='MemoryAssigned';Expression={$_.MemoryAssigned / 1MB}} | ConvertTo-Json -Compress")
     main_menu()
     while True:
         option = user_option()
@@ -59,7 +60,13 @@ def main():
         
         elif option == 3:
             create_more_vm()
-
+        
+        elif option == 4:
+            list_vm()
+            selected_vm = select_vm(vm_info_index)
+            configure_vm_network(selected_vm)
+            pause()
+            main()
 
         elif option == 7:
             print("Quiting...")
