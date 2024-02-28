@@ -51,11 +51,10 @@ def main():
         option = user_option()
         if option == 1:
             clear_screen()
-            powershell_command = "Get-VM | Select-Object Name, @{Name='State';Expression={$_.State.ToString()}}, CPUusage, @{Name='MemoryAssigned';Expression={$_.MemoryAssigned / 1MB}} | ConvertTo-Json -Compress"
-            show_list(powershell_command)
+            list_vm()
             pause()
             main()
-            
+
         elif option == 2:
             create_vm()
         elif option == 7:

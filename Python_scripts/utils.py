@@ -3,6 +3,9 @@ import json
 from tabulate import tabulate
 
 
+def list_vm():
+    powershell_command = "Get-VM | Select-Object Name, @{Name='State';Expression={$_.State.ToString()}}, CPUusage, @{Name='MemoryAssigned';Expression={$_.MemoryAssigned / 1MB}} | ConvertTo-Json -Compress"
+    show_list(powershell_command)    
 
 
 def create_vm():
