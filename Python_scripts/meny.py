@@ -1,3 +1,4 @@
+import os
 import sys
 import ctypes
 from utils import *
@@ -27,6 +28,14 @@ def is_admin():
     except:
         return False
 
+def clear_screen():
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+def pause():
+    input(f'\nPress ENTER to continue') 
+    clear_screen()
+
+
 ## Runs the main menu
 def main_menu():
     print(main_menu_text)
@@ -41,8 +50,11 @@ def main():
     while True:
         option = user_option()
         if option == 1:
+            clear_screen()
             powershell_command = "Get-VM | Select-Object Name, @{Name='State';Expression={$_.State.ToString()}}, CPUusage, @{Name='MemoryAssigned';Expression={$_.MemoryAssigned / 1MB}} | ConvertTo-Json -Compress"
             show_list(powershell_command)
+            pause()
+            main()
             
         elif option == 2:
             create_vm()
