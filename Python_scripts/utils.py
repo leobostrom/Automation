@@ -56,15 +56,15 @@ def show_list(powershell_command):
 
 def select_vm(vm_info_index):
     # Allow the user to select an object
-    index = int(input("Ange index för det önskade objektet: ")) - 1
+    index = int(input("Enter the index of the desired object: ")) - 1
 
     # Check if the index is valid
     if 0 <= index < len(vm_info_index):
         user_choice = vm_info_index[index][1]  # Sätt namnet på det valda objektet i user_choice
-        print("Du valde:", user_choice)
+        print("You chose:", user_choice)
         return(user_choice)
     else:
-        print("Ogiltigt index. Var vänlig ange ett giltigt index.")
+        print("Invalid index. Please choose a valid index.")
 
 # Anropa funktionen med PowerShell-kommando som argument
 #powershell_command = "Get-VM | Select-Object Name, @{Name='State';Expression={$_.State.ToString()}}, CPUusage, @{Name='MemoryAssigned';Expression={$_.MemoryAssigned / 1MB}} | ConvertTo-Json -Compress"
@@ -136,22 +136,50 @@ def create_more_vm():
 
 def remove_vm(user_choice):
     vm_name = user_choice
-    print(f"Removing VM '{vm_name}'...")
+    print(f"Removing VM '{vm_name}'")
 
-    # Replace 'Username' and 'Password' with your actual username and password
     username = 'administrator'
     password = 'Linux4Ever'
 
-    ps_script = f'''
+    # Check if the VM is running
+    ps_check_running = f'''
         $User = "{username}"
         $PWord = ConvertTo-SecureString -String "{password}" -AsPlainText -Force
         $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $PWord
 
-        $VMName= "{vm_name}"
+        $VMName = "{vm_name}"
+        $VMStatus = Get-VM -Name $VMName | Select-Object -ExpandProperty State
+        Write-Output $VMStatus
+    '''
+
+    result = subprocess.run(["powershell.exe", "-Command", ps_check_running], capture_output=True, text=True)
+    vm_status = result.stdout.strip()
+
+    if vm_status.lower() == "running":
+        print(f"Shutting down VM '{vm_name}'")
+        ps_shutdown_vm = f'''
+            $User = "{username}"
+            $PWord = ConvertTo-SecureString -String "{password}" -AsPlainText -Force
+            $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $PWord
+
+            $VMName = "{vm_name}"
+            Stop-VM -Name $VMName -Force
+        '''
+
+        subprocess.run(["powershell.exe", "-Command", ps_shutdown_vm])
+
+    # remove the VM
+    ps_remove_vm = f'''
+        $User = "{username}"
+        $PWord = ConvertTo-SecureString -String "{password}" -AsPlainText -Force
+        $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $PWord
+
+        $VMName = "{vm_name}"
         Remove-VM -Name $VMName -Force
     '''
 
-    subprocess.run(["powershell.exe", "-Command", ps_script])
+    subprocess.run(["powershell.exe", "-Command", ps_remove_vm])
+    print(f"VM '{vm_name}' removed.")
 
 def manage_vm(user_choice):
     vm_name = user_choice
