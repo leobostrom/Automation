@@ -105,7 +105,6 @@ def configure_vm_network(user_choice):
 
     subprocess.run(["powershell.exe", "-Command", ps_script])
 
-    subprocess.run(["powershell.exe", "-Command", ps_script])
 
 def create_more_vm():
     num_vms = int(input("Enter the number of VMs to create: "))
