@@ -89,9 +89,7 @@ def configure_vm_network(user_choice):
         $IPAdd= "{ip_address}"
         $Gateway= "10.6.67.1"
         $DNSAdd= "10.6.67.2"
-        $TimeZone= "Central Standard Time"
         $VMName= "{vm_name}"
-        TZUtil /s $TimeZone
         Rename-Computer -NewName $VMName -Confirm:$False
 
         Write-Host "IP Address: $IPAdd"
