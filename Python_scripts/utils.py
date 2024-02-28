@@ -96,10 +96,14 @@ def configure_vm_network(user_choice):
         Write-Host "VM Name: $VMName"
 
         Invoke-Command -VMName $VMName -Credential $Credential -ScriptBlock {{
+            Set-NetIPInterface -InterfaceAlias "Ethernet" -Dhcp Enabled
+            Remove-NetRoute -InterfaceAlias "Ethernet" -Confirm:$false
             New-NetIPAddress -InterfaceAlias "Ethernet" -IPAddress $using:IPAdd -PrefixLength 24 -DefaultGateway $using:Gateway
             Set-DnsClientServerAddress -InterfaceAlias "Ethernet" -ServerAddresses $using:DNSAdd
         }}
     '''
+
+    subprocess.run(["powershell.exe", "-Command", ps_script])
 
     subprocess.run(["powershell.exe", "-Command", ps_script])
 
