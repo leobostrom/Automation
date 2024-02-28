@@ -1,9 +1,13 @@
+import os
 import subprocess
 import json
 from tabulate import tabulate
 
+def clear_screen():
+    os.system('cls' if os.name == 'nt' else 'clear')
 
 def list_vm():
+    clear_screen()
     powershell_command = "Get-VM | Select-Object Name, @{Name='State';Expression={$_.State.ToString()}}, CPUusage, @{Name='MemoryAssigned';Expression={$_.MemoryAssigned / 1MB}} | ConvertTo-Json -Compress"
     show_list(powershell_command)    
 

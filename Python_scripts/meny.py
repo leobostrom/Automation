@@ -1,4 +1,3 @@
-import os
 import sys
 import ctypes
 from utils import *
@@ -28,9 +27,6 @@ def is_admin():
     except:
         return False
 
-def clear_screen():
-    os.system('cls' if os.name == 'nt' else 'clear')
-
 def pause():
     input(f'\nPress ENTER to continue') 
     clear_screen()
@@ -50,16 +46,13 @@ def main():
     while True:
         option = user_option()
         if option == 1:
-            clear_screen()
             list_vm()
             pause()
             main()
 
-        elif option == 2:
-            clear_screen()
+        elif option == 2:         
             list_vm()
             create_vm()
-            clear_screen()
             list_vm()
             pause()
             main()
