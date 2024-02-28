@@ -74,9 +74,17 @@ def configure_vm_network(user_choice):
     print(f"Configuring VM '{vm_name}'...")
     
     ip_address = input("Enter what IP Address: ")
-    print(f"Setting '{ip_address} for '{vm_name}' ")
+    print(f"Setting '{ip_address}' for '{vm_name}' ")
+
+    # Replace 'Username' and 'Password' with your actual username and password
+    username = 'administrator'
+    password = 'Linux4Ever'
     
-    subprocess.run(["powershell.exe", "-Command", f'''
+    ps_script = f'''
+        $User = "{username}"
+        $PWord = ConvertTo-SecureString -String "{password}" -AsPlainText -Force
+        $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $PWord
+
         $VMName= "{vm_name}"
         $IPAdd= "{ip_address}"
         $Gateway= "10.6.67.1"
@@ -86,9 +94,16 @@ def configure_vm_network(user_choice):
         TZUtil /s $TimeZone
         Rename-Computer -NewName $VMName -Confirm:$False
 
-        New-NetIPAddress -InterfaceAlias "Ethernet" -IPAddress $IPAdd -PrefixLength 24 -DefaultGateway $Gateway
-        Set-DnsClientServerAddress -InterfaceAlias "Ethernet" -ServerAddresses $DNSAdd
-    '''])
+        Write-Host "IP Address: $IPAdd"
+        Write-Host "VM Name: $VMName"
+
+        Invoke-Command -VMName $VMName -Credential $Credential -ScriptBlock {{
+            New-NetIPAddress -InterfaceAlias "Ethernet" -IPAddress $using:IPAdd -PrefixLength 24 -DefaultGateway $using:Gateway
+            Set-DnsClientServerAddress -InterfaceAlias "Ethernet" -ServerAddresses $using:DNSAdd
+        }}
+    '''
+
+    subprocess.run(["powershell.exe", "-Command", ps_script])
 
 def create_more_vm():
     num_vms = int(input("Enter the number of VMs to create: "))
