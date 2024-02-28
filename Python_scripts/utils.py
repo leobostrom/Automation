@@ -57,3 +57,25 @@ def select_vm(vm_info_index):
 #powershell_command = "Get-VM | Select-Object Name, @{Name='State';Expression={$_.State.ToString()}}, CPUusage, @{Name='MemoryAssigned';Expression={$_.MemoryAssigned / 1MB}} | ConvertTo-Json -Compress"
 #vm_info_index = show_list(powershell_command)
 #select_vm(vm_info_index)
+        
+def configure_vm_network():
+    vm_name = input("Enter the VM name: ")   
+    print(f"Configuring VM '{vm_name}'...")
+    
+    ip_address = input("Enter what IP Address: ")
+    print(f"Setting '{ip_address} for '{vm_name}' ")
+    
+    subprocess.run(["powershell.exe", "-Command", f'''
+        $VMName= "{vm_name}"
+        $IPAdd= "{ip_address}"
+        $Gateway= "192.168.70.1"
+        $DNSAdd= "192.168.70.4"
+        #Timezonen behöver vi väll inte lägga in egentlgien
+        $TimeZone= "Central Standard Time"
+        $VMName= "{vm_name}"
+        TZUtil /s $TimeZone
+        Rename-Computer -NewName $VMName -Confirm:$False
+
+        New-NetIPAddress -InterfaceAlias "Ethernet" _IPAddress $IPAdd -PrefixLength 24 -DefaultGateway $Gateway
+        Set-DnsClientServerAddress -InterfaceAlias "Ethernet" -ServerAddresses $DNSAdd
+    '''])
