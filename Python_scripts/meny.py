@@ -56,6 +56,10 @@ def main():
             list_vm()
             pause()
             main()
+        
+        elif option == 3:
+            create_more_vm()
+
 
         elif option == 7:
             print("Quiting...")

@@ -78,9 +78,8 @@ def configure_vm_network():
     subprocess.run(["powershell.exe", "-Command", f'''
         $VMName= "{vm_name}"
         $IPAdd= "{ip_address}"
-        $Gateway= "192.168.70.1"
-        $DNSAdd= "192.168.70.4"
-        #Timezonen behöver vi väll inte lägga in egentlgien
+        $Gateway= "10.6.67.1"
+        $DNSAdd= "10.6.67.2"
         $TimeZone= "Central Standard Time"
         $VMName= "{vm_name}"
         TZUtil /s $TimeZone
@@ -89,3 +88,29 @@ def configure_vm_network():
         New-NetIPAddress -InterfaceAlias "Ethernet" _IPAddress $IPAdd -PrefixLength 24 -DefaultGateway $Gateway
         Set-DnsClientServerAddress -InterfaceAlias "Ethernet" -ServerAddresses $DNSAdd
     '''])
+
+def create_more_vm():
+    num_vms = int(input("Enter the number of VMs to create: "))
+
+    for _ in range(num_vms):
+        VMName = input("Enter a VM name: ")
+
+        RAM = "4GB"
+        SwitchName = "Internet"
+        CPUCount = 2
+        MotherVHD = "C:\\Production\\VHD\\Motherdisk.vhdx"
+        DataVHD = f"C:\\Production\\VHD\\{VMName}.vhdx"
+
+        # PowerShell commands
+        commands = [
+            f'New-VHD -ParentPath "{MotherVHD}" -Path "{DataVHD}" -Differencing',
+            f'New-VM -VHDPath "{DataVHD}" -MemoryStartupBytes {RAM} -Name "{VMName}" -SwitchName "{SwitchName}"',
+            f'Set-VM -Name "{VMName}" -ProcessorCount {CPUCount}',
+            f'Set-VMMemory "{VMName}" -DynamicMemoryEnabled $true'
+        ]
+
+        # Execute PowerShell commands
+        for command in commands:
+            subprocess.run(['powershell', '-Command', command], capture_output=True)
+
+        print(f"Virtual machine {VMName} created successfully.")
