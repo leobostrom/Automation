@@ -2,6 +2,8 @@ import os
 import subprocess
 import json
 from tabulate import tabulate
+import time
+
 
 def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -68,7 +70,7 @@ def select_vm(vm_info_index):
 #powershell_command = "Get-VM | Select-Object Name, @{Name='State';Expression={$_.State.ToString()}}, CPUusage, @{Name='MemoryAssigned';Expression={$_.MemoryAssigned / 1MB}} | ConvertTo-Json -Compress"
 #vm_info_index = show_list(powershell_command)
 #select_vm(vm_info_index)
-        
+      
 def configure_vm_network(user_choice):
     vm_name = user_choice
     print(f"Configuring VM '{vm_name}'...")
@@ -131,3 +133,64 @@ def create_more_vm():
             subprocess.run(['powershell', '-Command', command], capture_output=True)
 
         print(f"Virtual machine {VMName} created successfully.")
+
+def remove_vm(user_choice):
+    vm_name = user_choice
+    print(f"Removing VM '{vm_name}'...")
+
+    # Replace 'Username' and 'Password' with your actual username and password
+    username = 'administrator'
+    password = 'Linux4Ever'
+
+    ps_script = f'''
+        $User = "{username}"
+        $PWord = ConvertTo-SecureString -String "{password}" -AsPlainText -Force
+        $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $PWord
+
+        $VMName= "{vm_name}"
+        Remove-VM -Name $VMName -Force
+    '''
+
+    subprocess.run(["powershell.exe", "-Command", ps_script])
+
+def manage_vm(user_choice):
+    vm_name = user_choice
+    print(f"Managing VM '{vm_name}'...")
+
+    # Choose an action (1 for start, 2 for stop, 3 for restart, 4 to exit)
+    action = int(input("Enter 1 to start, 2 to stop, 3 to restart the VM, or 4 to exit: "))
+
+    # Replace 'Username' and 'Password' with your actual username and password
+    username = 'administrator'
+    password = 'Linux4Ever'
+
+    ps_script = f'''
+        $User = "{username}"
+        $PWord = ConvertTo-SecureString -String "{password}" -AsPlainText -Force
+        $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $PWord
+
+        $VMName= "{vm_name}"
+
+        switch ({action}) {{
+            1 {{ Start-VM -Name $VMName }}
+            2 {{ Stop-VM -Name $VMName -Force }}
+            3 {{ Restart-VM -Name $VMName -Force }}
+            4 {{ exit }}
+            default {{ Write-Host "Invalid action. Please enter a valid action." }}
+        }}
+    '''
+
+    subprocess.run(["powershell.exe", "-Command", ps_script])
+
+    subprocess.run(["powershell.exe", "-Command", ps_script])
+
+
+
+
+def exit_menu():
+    print("\nExiting the Awesome Menu...")
+    time.sleep(1)  # Add a delay for dramatic effect
+    print("Hold on to your hat! You're now leaving the Matrix.")
+    print("See you on the other side of the code! 🚀")
+    print("🚀🐍✨")
+

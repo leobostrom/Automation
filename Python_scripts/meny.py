@@ -15,8 +15,8 @@ main_menu_text = """
 |  2: Create Virtual machines                            |
 |  3: Create test enviroment                             |
 |  4: Change configurations                              |
-|  5:                                                    |
-|  6:                                                    |
+|  5: Delete Virtual machines                            |
+|  6: Manage Virtual Machines                            |
 |  7: Exit                                               |
 |                                                        |
 |________________________________________________________|
@@ -67,9 +67,23 @@ def main():
             configure_vm_network(selected_vm)
             pause()
             main()
+        elif option == 5:
+            list_vm()
+            selected_vm = select_vm(vm_info_index)
+            remove_vm(selected_vm)
+            list_vm()
+            pause()
+            main()
+        elif option == 6:
+            list_vm()
+            selected_vm = select_vm(vm_info_index)
+            manage_vm(selected_vm)
+            list_vm()
+            pause()
+            main()
 
         elif option == 7:
-            print("Quiting...")
-            exit()
+            exit_menu()
+            break
 
 main()
