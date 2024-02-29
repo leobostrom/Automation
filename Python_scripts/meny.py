@@ -2,6 +2,7 @@ import sys
 import ctypes
 from utils import *
 
+
 main_menu_text = """
  ________________________________________________________
 |                                                        |
@@ -17,8 +18,8 @@ main_menu_text = """
 |  4: Change configurations                              |
 |  5: Delete Virtual machines                            |
 |  6: Manage Virtual Machines                            |
-|  7: Exit                                               |
-|                                                        |
+|  7: Manage Checkpoints                                 |
+|  8: Exit                                               |
 |________________________________________________________|
 """
 def is_admin():
@@ -81,8 +82,13 @@ def main():
             list_vm()
             pause()
             main()
-
         elif option == 7:
+            list_vm()
+            selected_vm = select_vm(vm_info_index)
+            manage_vm_checkpoints(selected_vm)
+            main()
+
+        elif option == 8:
            exit_menu()
            exit()
 

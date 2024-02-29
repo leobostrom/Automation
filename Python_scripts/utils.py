@@ -212,6 +212,27 @@ def manage_vm(user_choice):
 
     subprocess.run(["powershell.exe", "-Command", ps_script])
 
+def manage_vm_checkpoints(vm_name):
+    print(f"Managing checkpoints for VM '{vm_name}'...")
+
+    while True:
+        # Choose a checkpoint action (1 for create, 2 for restore, 3 for list, 4 to exit)
+        checkpoint_action = int(input("Enter 1 to create checkpoint, 2 to restore checkpoint, 3 to list checkpoints, or 4 to exit: "))
+
+        if checkpoint_action == 1:
+            checkpoint_name = input("Enter the name for the checkpoint: ")
+            subprocess.run(["powershell.exe", "-Command", f'Checkpoint-VM -Name {vm_name} -SnapshotName "{checkpoint_name}"'])
+            print(f"Checkpoint '{checkpoint_name}' created.")
+        elif checkpoint_action == 2:
+            subprocess.run(["powershell.exe", "-Command", f'Restore-VMCheckpoint -VMName {vm_name}'])
+            print("Checkpoint restored.")
+        elif checkpoint_action == 3:
+            subprocess.run(["powershell.exe", "-Command", f'Get-VMSnapshot -VMName {vm_name} | Format-Table -AutoSize'])
+        elif checkpoint_action == 4:
+            break
+        else:
+            print("Invalid checkpoint action. Please enter a valid action.")
+
 
 
 def exit_menu():
