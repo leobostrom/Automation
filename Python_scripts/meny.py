@@ -83,7 +83,7 @@ def main():
             main()
 
         elif option == 7:
-            exit_menu()
-            break
+            print("Exiting the menu🐍✨")
+            exit()
 
 main()

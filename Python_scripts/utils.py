@@ -213,12 +213,3 @@ def manage_vm(user_choice):
     subprocess.run(["powershell.exe", "-Command", ps_script])
 
 
-
-
-def exit_menu():
-    print("\nExiting the Awesome Menu...")
-    time.sleep(1)  # Add a delay for dramatic effect
-    print("Hold on to your hat! You're now leaving the Matrix.")
-    print("See you on the other side of the code! 🚀")
-    print("🚀🐍✨")
-
