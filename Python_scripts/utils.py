@@ -11,8 +11,8 @@ def clear_screen():
 def list_vm():
     clear_screen()
     powershell_command = "Get-VM | Select-Object Name, @{Name='State';Expression={$_.State.ToString()}}, CPUusage, @{Name='MemoryAssigned';Expression={$_.MemoryAssigned / 1MB}} | ConvertTo-Json -Compress"
-    show_list(powershell_command)    
-
+    vm_info_index = show_list(powershell_command)    
+    return vm_info_index
 
 def create_vm():
     VMName = input("Enter a VM name: ")

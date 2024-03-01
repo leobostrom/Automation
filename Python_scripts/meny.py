@@ -32,6 +32,10 @@ def pause():
     input(f'\nPress ENTER to continue') 
     clear_screen()
 
+def select():
+    vm_info_index = list_vm()
+    selected_vm = select_vm(vm_info_index)
+    return selected_vm
 
 ## Runs the main menu
 def main_menu():
@@ -43,7 +47,6 @@ def user_option():
 
 ## This runs the program
 def main():
-    vm_info_index = show_list("Get-VM | Select-Object Name, @{Name='State';Expression={$_.State.ToString()}}, CPUusage, @{Name='MemoryAssigned';Expression={$_.MemoryAssigned / 1MB}} | ConvertTo-Json -Compress")
     main_menu()
     while True:
         option = user_option()
@@ -63,28 +66,24 @@ def main():
             create_more_vm()
         
         elif option == 4:
-            list_vm()
-            selected_vm = select_vm(vm_info_index)
+            selected_vm = select()
             configure_vm_network(selected_vm)
             pause()
             main()
         elif option == 5:
-            list_vm()
-            selected_vm = select_vm(vm_info_index)
+            selected_vm = select()
             remove_vm(selected_vm)
             list_vm()
             pause()
             main()
         elif option == 6:
-            list_vm()
-            selected_vm = select_vm(vm_info_index)
+            selected_vm = select()
             manage_vm(selected_vm)
             list_vm()
             pause()
             main()
         elif option == 7:
-            list_vm()
-            selected_vm = select_vm(vm_info_index)
+            selected_vm = select()
             manage_vm_checkpoints(selected_vm)
             main()
 
