@@ -1,9 +1,12 @@
+import ipaddress
 import os
 import subprocess
 import json
 from tabulate import tabulate
 import time
 
+username = 'administrator'
+password = 'Linux4Ever'
 
 def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -17,8 +20,18 @@ def select():
     vm_info_index = list_vm()
     selected_vm = select_vm(vm_info_index)
     return selected_vm
-def create_vm():
+
+def create_one_vm():
     VMName = input("Enter a VM name: ")
+    create_vm(VMName)
+
+def create_more_vm():
+    num_vms = int(input("Enter the number of VMs to create: "))
+    for _ in range(num_vms):
+        VMName = input("Enter a VM name: ")
+        create_vm(VMName)
+
+def create_vm(VMName):
     
     RAM = "4GB"
     SwitchName = "Internet"
@@ -69,83 +82,56 @@ def select_vm(vm_info_index):
     else:
         print("Invalid index. Please choose a valid index.")
 
-# Anropa funktionen med PowerShell-kommando som argument
-#powershell_command = "Get-VM | Select-Object Name, @{Name='State';Expression={$_.State.ToString()}}, CPUusage, @{Name='MemoryAssigned';Expression={$_.MemoryAssigned / 1MB}} | ConvertTo-Json -Compress"
-#vm_info_index = show_list(powershell_command)
-#select_vm(vm_info_index)
-      
+
+def is_valid_ip(ip):
+    try:
+        ipaddress.ip_address(ip)
+        return True
+    except ValueError:
+        return False
+
 def configure_vm_network(user_choice):
     vm_name = user_choice
     print(f"Configuring VM '{vm_name}'...")
     
-    ip_address = input("Enter what IP Address: ")
-    print(f"Setting '{ip_address}' for '{vm_name}' ")
-
-    # Replace 'Username' and 'Password' with your actual username and password
-    username = 'administrator'
-    password = 'Linux4Ever'
+    while True:
+        ip_address = input("Enter the IP Address: ")
+        if is_valid_ip(ip_address):
+            print(f"Setting '{ip_address}' for '{vm_name}' ")
+            break
+        else:
+            print("Invalid IP address. Please enter a valid IP address.")
     
     ps_script = f'''
         $User = "{username}"
         $PWord = ConvertTo-SecureString -String "{password}" -AsPlainText -Force
         $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $PWord
-
-        
-        $IPAdd = "{ip_address}"
-        $Gateway = "10.6.67.1"
-        $DNSAdd = "10.6.67.2"
         $VMName = "{vm_name}"
-        
-
-        Write-Host "IP Address: $IPAdd"
-        Write-Host "VM Name: $VMName"
 
         Invoke-Command -VMName $VMName -Credential $Credential -ScriptBlock {{
             $VMName = "{vm_name}"      
-
+            $IPAdd = "{ip_address}"
+            $Gateway = "10.6.67.1"
+            $DNSAdd = "10.6.67.2"
+            
             Rename-Computer -NewName $VMName -Confirm:$False
             Set-NetIPInterface -InterfaceAlias "Ethernet" -Dhcp Enabled
             Remove-NetRoute -InterfaceAlias "Ethernet" -Confirm:$false
-            New-NetIPAddress -InterfaceAlias "Ethernet" -IPAddress $using:IPAdd -PrefixLength 24 -DefaultGateway $using:Gateway
-            Set-DnsClientServerAddress -InterfaceAlias "Ethernet" -ServerAddresses $using:DNSAdd
+            New-NetIPAddress -InterfaceAlias "Ethernet" -IPAddress $IPAdd -PrefixLength 24 -DefaultGateway $Gateway
+            Set-DnsClientServerAddress -InterfaceAlias "Ethernet" -ServerAddresses $DNSAdd
         }}
     '''
+    run_powershell(ps_script)
+    
 
+def run_powershell(ps_script):
     subprocess.run(["powershell.exe", "-Command", ps_script])
 
 
-def create_more_vm():
-    num_vms = int(input("Enter the number of VMs to create: "))
-
-    for _ in range(num_vms):
-        VMName = input("Enter a VM name: ")
-
-        RAM = "4GB"
-        SwitchName = "Internet"
-        CPUCount = 2
-        MotherVHD = "C:\\Production\\VHD\\Motherdisk.vhdx"
-        DataVHD = f"C:\\Production\\VHD\\{VMName}.vhdx"
-
-        # PowerShell commands
-        commands = [
-            f'New-VHD -ParentPath "{MotherVHD}" -Path "{DataVHD}" -Differencing',
-            f'New-VM -VHDPath "{DataVHD}" -MemoryStartupBytes {RAM} -Name "{VMName}" -SwitchName "{SwitchName}"',
-            f'Set-VM -Name "{VMName}" -ProcessorCount {CPUCount}',
-            f'Set-VMMemory "{VMName}" -DynamicMemoryEnabled $true'
-        ]
-
-        # Execute PowerShell commands
-        for command in commands:
-            subprocess.run(['powershell', '-Command', command], capture_output=True)
-
-        print(f"Virtual machine {VMName} created successfully.")
 
 def remove_vm(user_choice):
     vm_name = user_choice
     print(f"Removing VM '{vm_name}'")
-
-    username = 'administrator'
-    password = 'Linux4Ever'
 
     # Check if the VM is running
     ps_check_running = f'''
@@ -194,10 +180,6 @@ def manage_vm(user_choice):
     # Choose an action (1 for start, 2 for stop, 3 for restart, 4 to exit)
     action = int(input("Enter 1 to start, 2 to stop, 3 to restart the VM, or 4 to exit: "))
 
-    # Replace 'Username' and 'Password' with your actual username and password
-    username = 'administrator'
-    password = 'Linux4Ever'
-
     ps_script = f'''
         $User = "{username}"
         $PWord = ConvertTo-SecureString -String "{password}" -AsPlainText -Force
@@ -216,7 +198,6 @@ def manage_vm(user_choice):
 
     subprocess.run(["powershell.exe", "-Command", ps_script])
 
-    subprocess.run(["powershell.exe", "-Command", ps_script])
 
 def manage_vm_checkpoints(vm_name):
     print(f"Managing checkpoints for VM '{vm_name}'...")
