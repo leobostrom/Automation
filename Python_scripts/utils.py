@@ -90,17 +90,20 @@ def configure_vm_network(user_choice):
         $PWord = ConvertTo-SecureString -String "{password}" -AsPlainText -Force
         $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $PWord
 
-        $VMName= "{vm_name}"
-        $IPAdd= "{ip_address}"
-        $Gateway= "10.6.67.1"
-        $DNSAdd= "10.6.67.2"
-        $VMName= "{vm_name}"
-        Rename-Computer -NewName $VMName -Confirm:$False
+        
+        $IPAdd = "{ip_address}"
+        $Gateway = "10.6.67.1"
+        $DNSAdd = "10.6.67.2"
+        $VMName = "{vm_name}"
+        
 
         Write-Host "IP Address: $IPAdd"
         Write-Host "VM Name: $VMName"
 
         Invoke-Command -VMName $VMName -Credential $Credential -ScriptBlock {{
+            $VMName = "{vm_name}"      
+
+            Rename-Computer -NewName $VMName -Confirm:$False
             Set-NetIPInterface -InterfaceAlias "Ethernet" -Dhcp Enabled
             Remove-NetRoute -InterfaceAlias "Ethernet" -Confirm:$false
             New-NetIPAddress -InterfaceAlias "Ethernet" -IPAddress $using:IPAdd -PrefixLength 24 -DefaultGateway $using:Gateway
