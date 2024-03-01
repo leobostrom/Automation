@@ -32,10 +32,6 @@ def pause():
     input(f'\nPress ENTER to continue') 
     clear_screen()
 
-def select():
-    vm_info_index = list_vm()
-    selected_vm = select_vm(vm_info_index)
-    return selected_vm
 
 ## Runs the main menu
 def main_menu():

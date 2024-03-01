@@ -13,7 +13,10 @@ def list_vm():
     powershell_command = "Get-VM | Select-Object Name, @{Name='State';Expression={$_.State.ToString()}}, CPUusage, @{Name='MemoryAssigned';Expression={$_.MemoryAssigned / 1MB}} | ConvertTo-Json -Compress"
     vm_info_index = show_list(powershell_command)    
     return vm_info_index
-
+def select():
+    vm_info_index = list_vm()
+    selected_vm = select_vm(vm_info_index)
+    return selected_vm
 def create_vm():
     VMName = input("Enter a VM name: ")
     
