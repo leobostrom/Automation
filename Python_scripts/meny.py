@@ -1,7 +1,5 @@
-import sys
 import ctypes
 from utils import *
-
 
 main_menu_text = """
  ________________________________________________________
@@ -12,16 +10,17 @@ main_menu_text = """
 |                   Select an option                     |
 |________________________________________________________|
 |                                                        |
-|  1: Show Virtual machines                              |
-|  2: Create Virtual machines                            |
-|  3: Create test enviroment                             |
-|  4: Change configurations                              |
-|  5: Delete Virtual machines                            |
+|  1: Show Virtual Machines                              |
+|  2: Create Virtual Machine                             |
+|  3: Create Test Environment                            |
+|  4: Change Configurations                              |
+|  5: Delete Virtual Machine                             |
 |  6: Manage Virtual Machines                            |
 |  7: Manage Checkpoints                                 |
 |  8: Exit                                               |
 |________________________________________________________|
 """
+
 def is_admin():
     try:
         return ctypes.windll.shell32.IsUserAnAdmin()
@@ -29,19 +28,22 @@ def is_admin():
         return False
 
 def pause():
-    input(f'\nPress ENTER to continue') 
+    input('\nPress ENTER to continue...')
     clear_screen()
 
-
-## Runs the main menu
 def main_menu():
     print(main_menu_text)
 
-## Accepts user inputs for the main menu
 def user_option():
-    return int(input())
+    try:
+        option = int(input("Enter your choice: "))
+        if option < 1 or option > 8:
+            raise ValueError
+        return option
+    except ValueError:
+        print("Invalid input. Please enter a number between 1 and 8.")
+        return user_option()
 
-## This runs the program
 def main():
     main_menu()
     while True:
@@ -49,42 +51,37 @@ def main():
         if option == 1:
             list_vm()
             pause()
-            main()
-
-        elif option == 2:         
+        elif option == 2:
             list_vm()
-            create_vm()
-            list_vm()
+            create_one_vm()
             pause()
-            main()
-        
         elif option == 3:
             create_more_vm()
-        
+            pause()
         elif option == 4:
             selected_vm = select()
-            configure_vm_network(selected_vm)
+            ps_script = configure_vm_network(selected_vm)
+            run_powershell(ps_script)
             pause()
-            main()
         elif option == 5:
             selected_vm = select()
             remove_vm(selected_vm)
             list_vm()
             pause()
-            main()
         elif option == 6:
             selected_vm = select()
             manage_vm(selected_vm)
             list_vm()
             pause()
-            main()
         elif option == 7:
             selected_vm = select()
             manage_vm_checkpoints(selected_vm)
-            main()
-
+            pause()
         elif option == 8:
-           exit_menu()
-           exit()
+            exit_menu()
+            exit()
 
-main()
+        main_menu()  # Show main menu again
+
+if __name__ == "__main__":
+    main()
