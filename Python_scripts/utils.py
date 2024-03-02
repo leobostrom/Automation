@@ -37,20 +37,24 @@ def create_more_vm():
         run_powershell(ps_scripts)
         time.sleep(30)
         print(f"Virtual machine {VMName} created successfully.")
-        configure_vm_network(VMName)
+        ip_address = configure_vm_network(VMName)
+        time.sleep(5)
+        print(f"IP address have been sucessfully set {ip_address}")
+        print("Installing Microsoft Internet Information Services (IIS)")
         web_server(VMName)
+        print("Installation sucessfull")
         
 def web_server(VMName):     
         
-        ps_scripts = f"""
-        $User = "{username}"
-        $PWord = ConvertTo-SecureString -String "{password}" -AsPlainText -Force
-        $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $PWord
+    ps_scripts = f"""
+    $User = "{username}"
+    $PWord = ConvertTo-SecureString -String "{password}" -AsPlainText -Force
+    $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $PWord
 
-        Invoke-Command -VMName {VMName} -Credential $Credential -ScriptBlock {{
-        ps_scripts = "Install-WindowsFeature -Name Web-Server -IncludeManagementTools"
-        }}"""
-        run_powershell(ps_scripts)
+    Invoke-Command -VMName {VMName} -Credential $Credential -ScriptBlock {{
+    Install-WindowsFeature -Name Web-Server -IncludeManagementTools
+}}"""
+    run_powershell(ps_scripts)
 
 def create_vm(VMName):
     
@@ -116,6 +120,7 @@ def configure_vm_network(user_choice):
         ip_address = input("Enter the IP Address: ")
         if is_valid_ip(ip_address):
             print(f"Setting '{ip_address}' for '{vm_name}' ")
+            return ip_address
             break
         else:
             print("Invalid IP address. Please enter a valid IP address.")
