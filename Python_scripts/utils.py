@@ -24,12 +24,27 @@ def select():
 def create_one_vm():
     VMName = input("Enter a VM name: ")
     create_vm(VMName)
+    print(f"Virtual machine {VMName} created successfully.")
 
 def create_more_vm():
     num_vms = int(input("Enter the number of VMs to create: "))
     for _ in range(num_vms):
         VMName = input("Enter a VM name: ")
         create_vm(VMName)
+        print("Creating Virtual machine...")
+        time.sleep(10)
+        ps_scripts = f"Start-VM -Name {VMName}"
+        run_powershell(ps_scripts)
+        time.sleep(30)
+        print(f"Virtual machine {VMName} created successfully.")
+        configure_vm_network(VMName)
+        
+def web_server():     
+        ps_scripts = f"""
+        Invoke-Command -VMName $VMName -Credential $Credential -ScriptBlock {{
+        ps_scripts = "Install-WindowsFeature -Name Web-Server -IncludeManagementTools"
+        }}"""
+        run_powershell(ps_scripts)
 
 def create_vm(VMName):
     
@@ -50,9 +65,6 @@ def create_vm(VMName):
     # Execute PowerShell commands
     for command in commands:
         subprocess.run(['powershell', '-Command', command], capture_output=True)
-
-    print(f"Virtual machine {VMName} created successfully.")
-
 
 def show_list(powershell_command):
     # Run the PowerShell command
@@ -219,7 +231,6 @@ def manage_vm_checkpoints(vm_name):
             break
         else:
             print("Invalid checkpoint action. Please enter a valid action.")
-
 
 
 def exit_menu():
