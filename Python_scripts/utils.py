@@ -38,10 +38,16 @@ def create_more_vm():
         time.sleep(30)
         print(f"Virtual machine {VMName} created successfully.")
         configure_vm_network(VMName)
+        web_server(VMName)
         
-def web_server():     
+def web_server(VMName):     
+        
         ps_scripts = f"""
-        Invoke-Command -VMName $VMName -Credential $Credential -ScriptBlock {{
+        $User = "{username}"
+        $PWord = ConvertTo-SecureString -String "{password}" -AsPlainText -Force
+        $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $PWord
+
+        Invoke-Command -VMName {VMName} -Credential $Credential -ScriptBlock {{
         ps_scripts = "Install-WindowsFeature -Name Web-Server -IncludeManagementTools"
         }}"""
         run_powershell(ps_scripts)
