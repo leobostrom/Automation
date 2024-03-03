@@ -14,8 +14,10 @@ def clear_screen():
 def list_vm():
     clear_screen()
     powershell_command = "Get-VM | Select-Object Name, @{Name='State';Expression={$_.State.ToString()}}, CPUusage, @{Name='MemoryAssigned';Expression={$_.MemoryAssigned / 1MB}} | ConvertTo-Json -Compress"
-    vm_info_index = show_list(powershell_command)    
+    headers = ["Index", "VM Name", "State", "CPU Usage", "Memmory Usage"]
+    vm_info_index = show_list(powershell_command, headers)
     return vm_info_index
+
 def select():
     vm_info_index = list_vm()
     selected_vm = select_vm(vm_info_index)
@@ -76,7 +78,7 @@ def create_vm(VMName):
     for command in commands:
         subprocess.run(['powershell', '-Command', command], capture_output=True)
 
-def show_list(powershell_command):
+def show_list(powershell_command, headers):
     # Run the PowerShell command
     result = subprocess.run(['powershell', '-Command', powershell_command], capture_output=True, text=True)
 
@@ -87,7 +89,8 @@ def show_list(powershell_command):
     vm_info_index = [(i+1, *vm.values()) for i, vm in enumerate(vm_info)]
 
     # Display data as a table using tabulate
-    headers = ["Index"] + list(vm_info[0].keys())
+    #headers = ["Index"] + list(vm_info[0].keys())
+
     print(tabulate(vm_info_index, headers=headers, tablefmt="fancy_grid"))
     return vm_info_index
 
@@ -237,7 +240,9 @@ def manage_vm_checkpoints(vm_name):
             subprocess.run(["powershell.exe", "-Command", f'Restore-VMCheckpoint -VMName {vm_name}'])
             print("Checkpoint restored.")
         elif checkpoint_action == 3:
-            subprocess.run(["powershell.exe", "-Command", f'Get-VMSnapshot -VMName {vm_name} | Format-Table -AutoSize'])
+            powershell_command = "Get-VMSnapshot -VMName WindowsSSS | Select-Object Name, @{Name='CreationTime';Expression={$_.CreationTime.ToString('yyyy-MM-dd HH:mm:ss')}} | ConvertTo-Json -Compress"
+            headers = ["Index", "Checkpoint Name", "Creation Time"]
+            show_list(powershell_command, headers)       
         elif checkpoint_action == 4:
             break
         else:
