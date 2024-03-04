@@ -25,7 +25,8 @@ def select():
 
 def create_one_vm():
     VMName = input("Enter a VM name: ")
-    create_vm(VMName)
+    ip_address = input("Enter the IP Address: ")
+    create_vm(VMName, ip_address)
     print(f"Virtual machine {VMName} created successfully.")
 
 def create_more_vm():
@@ -45,6 +46,13 @@ def create_more_vm():
         print("Installing Microsoft Internet Information Services (IIS)")
         web_server(VMName)
         print("Installation sucessfull")
+
+
+
+    
+
+
+    
         
 def web_server(VMName):     
         
@@ -55,6 +63,7 @@ def web_server(VMName):
 
     Invoke-Command -VMName {VMName} -Credential $Credential -ScriptBlock {{
     Install-WindowsFeature -Name Web-Server -IncludeManagementTools
+    Install-WindowsFeature -Name NLB
 }}"""
     run_powershell(ps_scripts)
 
@@ -117,27 +126,27 @@ def is_valid_ip(ip):
     except ValueError:
         return False
 
-def configure_vm_network(user_choice):
-    vm_name = user_choice
-    print(f"Configuring VM '{vm_name}'...")
+def configure_vm_network(VMName, ip):
+    print(f"Configuring VM '{VMName}'...")
     
-    while True:
-        ip_address = input("Enter the IP Address: ")
-        if is_valid_ip(ip_address):
-            print(f"Setting '{ip_address}' for '{vm_name}' ")
-            break  # bryt loopen om en giltig IP-adress anges
-        else:
-            print("Invalid IP address. Please enter a valid IP address.")
+    #while True:
+    #    ip_address = ip
+    #    if is_valid_ip(ip_address):
+    #        print(f"Setting '{ip_address}' for '{vm_name}' ")
+    #        break  # bryt loopen om en giltig IP-adress anges
+    #    else:
+    #        print("Invalid IP address. Please enter a valid IP address.")
+    
     
     ps_script = f'''
         $User = "{username}"
         $PWord = ConvertTo-SecureString -String "{password}" -AsPlainText -Force
         $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $PWord
-        $VMName = "{vm_name}"
+        $VMName = "{VMName}"
 
         Invoke-Command -VMName $VMName -Credential $Credential -ScriptBlock {{
-            $VMName = "{vm_name}"      
-            $IPAdd = "{ip_address}"
+            $VMName = "{VMName}"      
+            $IPAdd = "{ip}"
             $Gateway = "10.6.67.1"
             $DNSAdd = "10.6.67.2"
             
