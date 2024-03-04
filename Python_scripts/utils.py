@@ -103,7 +103,7 @@ def select_vm(vm_info_index):
 
     # Check if the index is valid
     if 0 <= index < len(vm_info_index):
-        user_choice = vm_info_index[index][1]  # Sätt namnet på det valda objektet i user_choice
+        user_choice = vm_info_index[index][1]  
         print("You chose:", user_choice)
         return(user_choice)
     else:
@@ -125,8 +125,7 @@ def configure_vm_network(user_choice):
         ip_address = input("Enter the IP Address: ")
         if is_valid_ip(ip_address):
             print(f"Setting '{ip_address}' for '{vm_name}' ")
-            return ip_address
-            break
+            break  # bryt loopen om en giltig IP-adress anges
         else:
             print("Invalid IP address. Please enter a valid IP address.")
     
@@ -150,6 +149,7 @@ def configure_vm_network(user_choice):
         }}
     '''
     run_powershell(ps_script)
+
     
 
 def run_powershell(ps_script):
