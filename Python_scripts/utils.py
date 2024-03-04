@@ -85,12 +85,14 @@ def show_list(powershell_command, headers):
     # Convert the JSON result to a Python dictionary
     vm_info = json.loads(result.stdout)
 
+    # If vm_info is a dictionary, convert it to a list with one element
+    if isinstance(vm_info, dict):
+        vm_info = [vm_info]
+
     # Add index to each element in the list
     vm_info_index = [(i+1, *vm.values()) for i, vm in enumerate(vm_info)]
 
     # Display data as a table using tabulate
-    #headers = ["Index"] + list(vm_info[0].keys())
-
     print(tabulate(vm_info_index, headers=headers, tablefmt="fancy_grid"))
     return vm_info_index
 
