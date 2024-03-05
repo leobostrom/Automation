@@ -13,7 +13,7 @@ def add_computer():
     
     for _ in range(num_vms):
         VMName = input("Enter a VM name: ")
-        ip = input("Enter ipaddress: ")
+        ip = input("Enter IP-address: ")
         vm[VMName] = ip
     vm_list = list(vm.keys())
     print(vm_list)
@@ -42,6 +42,7 @@ def add_computer():
 
     for vm in vm_list:
         print(vm)
+        create_website(vm)
         config_nlb(nlb_ip, vm, nlb_master)
 
 
@@ -66,6 +67,44 @@ def config_nlb(nlb_ip, vm, nlb_master):
         
         run_powershell(ps_script)
         
+def create_website(vm):
+        # HTML-innehållet för webbsidan
+    html_content = f"""
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Min enkla webbsida</title>
+    </head>
+    <body>
+        <h1>Välkommen till min enkla webbsida!</h1>
+        <p>Du är ansluten till server: {vm}</p>
+    </body>
+    </html>
+    """
+
+    # Sökväg till målfilen på servern
+    remote_path = f'\\\\{vm}\\c$\\inetpub\\wwwroot\\index.html'
+
+    try:
+        # Konstruera PowerShell-kommandot med variabler för användarnamn och lösenord
+        powershell_command = f"""
+        $User = "{username}"
+        $PWord = ConvertTo-SecureString -String "{password}" -AsPlainText -Force
+        $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $PWord
+        
+        Set-Content -Path "{remote_path}" -Value @\"{html_content}\"@ -Credential $Credential
+        """
+
+        # Kör PowerShell-kommandot med subprocess
+        subprocess.run(["powershell.exe", "-Command", powershell_command], check=True)
+
+        print(f"Webbsida skapad på {vm}")
+
+    except subprocess.CalledProcessError as e:
+        print(f"Misslyckades med att skapa webbsida på {vm}: {e}")
+
 def create_vm(VMName):
     
     RAM = "4GB"
