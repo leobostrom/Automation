@@ -94,7 +94,7 @@ def create_website(vm):
         $PWord = ConvertTo-SecureString -String "{password}" -AsPlainText -Force
         $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $PWord
         
-        Set-Content -Path "{remote_path}" -Value @\"{html_content}\"@ -Credential $Credential
+        Set-Content -Path "{remote_path}" -Value "{html_content}" -Credential $Credential
         """
 
         # Kör PowerShell-kommandot med subprocess
