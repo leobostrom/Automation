@@ -25,8 +25,7 @@ def select():
 
 def create_one_vm():
     VMName = input("Enter a VM name: ")
-    ip_address = input("Enter the IP Address: ")
-    create_vm(VMName, ip_address)
+    create_vm(VMName)
     print(f"Virtual machine {VMName} created successfully.")
 
 def create_more_vm():
@@ -63,7 +62,7 @@ def web_server(VMName):
 
     Invoke-Command -VMName {VMName} -Credential $Credential -ScriptBlock {{
     Install-WindowsFeature -Name Web-Server -IncludeManagementTools
-    Install-WindowsFeature -Name NLB
+    Install-WindowsFeature -Name NLB -IncludeManagementTools
 }}"""
     run_powershell(ps_scripts)
 
@@ -155,6 +154,7 @@ def configure_vm_network(VMName, ip):
             Remove-NetRoute -InterfaceAlias "Ethernet" -Confirm:$false
             New-NetIPAddress -InterfaceAlias "Ethernet" -IPAddress $IPAdd -PrefixLength 24 -DefaultGateway $Gateway
             Set-DnsClientServerAddress -InterfaceAlias "Ethernet" -ServerAddresses $DNSAdd
+            Restart-Computer
         }}
     '''
     run_powershell(ps_script)

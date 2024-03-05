@@ -15,8 +15,11 @@ def add_computer():
         VMName = input("Enter a VM name: ")
         ip = input("Enter ipaddress: ")
         vm[VMName] = ip
-    ip_list = list(vm.values())
-    print(ip_list)
+    vm_list = list(vm.keys())
+    print(vm_list)
+    nlb_master = next(iter(vm.keys()))
+    print(nlb_master)
+    time.sleep(20)
 
     
     for VMName, ip in vm.items():
@@ -32,43 +35,50 @@ def add_computer():
     for VMName, ip in vm.items():
         configure_vm_network(VMName, ip)
         print(f"Setting '{ip}' for '{VMName}' ")
-    time.sleep(5)
+    time.sleep(20)
+
 
     for VMName, ip in vm.items():
         web_server(VMName)
 
-    config_nlb(VMName, ip, nlb_ip)
+    config_nlb(VMName, ip, nlb_ip, vm_list, nlb_master)
 
-def config_nlb(VMName, nlb_ip, ip_list):
-    
+def config_nlb(username, password, nlb_ip, vm_list, nlb_master):
+    if isinstance(vm_list, dict):
+        vm_list = [vm_list]
     
     ps_scripts = f"""
     $User = "{username}"
     $PWord = ConvertTo-SecureString -String "{password}" -AsPlainText -Force
     $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $PWord
-    $IP = {ip_list}
+    $NLB_IP = "{nlb_ip}"
+    $VMList = "{vm_list}"
+    $NLB_Master = "{nlb_master}"
+
+    foreach ($VMName in $vmlist) {{
+        Invoke-Command -VMName $VMName -Credential $Credential -ScriptBlock {{
+            # NLB Configuration for each VM
+            New-NlbCluster -InterfaceName "Ethernet" -ClusterName "NLBCluster" -ClusterPrimaryIP $using:NLB_IP -OperationMode Multicast
+            Get-NlbCluster $using:NLB_Master | Add-NlbClusterNode -NewNodeName $using:VMName -NewNodeInterface "Ethernet"
+            
+            # Additional NLB Configuration for each VM (Modify as needed)
+            # Example: Add-NlbClusterPortRule -ClusterName "NLBCluster" -Name "Rule1" -Protocol "TCP" -Mode MultipleHost -Affinity Single
+        }}
+    }}"""
     
+    # Execute the PowerShell script
+    run_powershell(ps_scripts)
 
-    Invoke-Command -VMName {VMName} -Credential $Credential -ScriptBlock {{
-    New-NlbCluster -InterfaceName "Ethernet" -ClusterPrimaryIP {nlb_ip} -SubnetMask 255.255.255.0
-    
-    $IP = {ip_list}
-    
-        foreach ($IP in $IP) 
-            Add-NlbClusterNode -NewNodeName "Node1" -NewNodeInterface "Ethernet" -NewNodePrimaryIP $IP -NewNodeSubnetMask 255.255.255.0
 
+    # Execute the PowerShell script
+    run_powershell(ps_scripts)
 
     
+    # Execute the PowerShell script
+    run_powershell(ps_scripts)
 
-
-
-}}"""
-    
-
-    
-
+    run_powershell(ps_scripts)
         
-
 def create_vm(VMName):
     
     RAM = "4GB"
