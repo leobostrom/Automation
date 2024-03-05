@@ -43,19 +43,21 @@ def add_computer():
 
     config_nlb(VMName, ip, nlb_ip, vm_list, nlb_master)
 
-def config_nlb(username, password, nlb_ip, vm_list, nlb_master):
+def config_nlb(nlb_ip, vm_list, nlb_master):
     if isinstance(vm_list, dict):
         vm_list = [vm_list]
-    
+    for vm in vm_list:
+        vms = vm
+        run_powershell(ps_script)
     ps_scripts = f"""
     $User = "{username}"
     $PWord = ConvertTo-SecureString -String "{password}" -AsPlainText -Force
     $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $PWord
     $NLB_IP = "{nlb_ip}"
-    $VMList = "{vm_list}"
+    $VMList = "{vms}"
     $NLB_Master = "{nlb_master}"
 
-    foreach ($VMName in $vmlist) {{
+     {{
         Invoke-Command -VMName $VMName -Credential $Credential -ScriptBlock {{
             # NLB Configuration for each VM
             New-NlbCluster -InterfaceName "Ethernet" -ClusterName "NLBCluster" -ClusterPrimaryIP $using:NLB_IP -OperationMode Multicast
