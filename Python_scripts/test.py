@@ -44,7 +44,8 @@ def add_computer():
     config_nlb(nlb_ip, vm_list, nlb_master)
 
 def config_nlb(nlb_ip, vm_list, nlb_master):
-    for vm in vm_list:
+    
+    for vm in vm_list[1:]:
         ps_script = f"""
         $User = "{username}"
         $PWord = ConvertTo-SecureString -String "{password}" -AsPlainText -Force
