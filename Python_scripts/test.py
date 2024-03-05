@@ -44,8 +44,7 @@ def add_computer():
     config_nlb(nlb_ip, vm_list, nlb_master)
 
 def config_nlb(nlb_ip, vm_list, nlb_master):
-    
-    for vm in vm_list[1:]:
+    for vm in vm_list:
         ps_script = f"""
         $User = "{username}"
         $PWord = ConvertTo-SecureString -String "{password}" -AsPlainText -Force
@@ -56,9 +55,13 @@ def config_nlb(nlb_ip, vm_list, nlb_master):
 
          {{
             Invoke-Command -VMName $VMName -Credential $Credential -ScriptBlock {{
-                # NLB Configuration for each VM
-                New-NlbCluster -InterfaceName "Ethernet" -ClusterName "NLBCluster" -ClusterPrimaryIP $using:NLB_IP -OperationMode Multicast
-                Get-NlbCluster $using:NLB_Master | Add-NlbClusterNode -NewNodeName $using:VMName -NewNodeInterface "Ethernet"
+                try {{
+                    # NLB Configuration for each VM
+                    New-NlbCluster -InterfaceName "Ethernet" -ClusterName "NLBCluster" -ClusterPrimaryIP $using:NLB_IP -OperationMode Multicast
+                    Get-NlbCluster $using:NLB_Master | Add-NlbClusterNode -NewNodeName $using:VMName -NewNodeInterface "Ethernet"
+                }} catch {{
+                    Write-Host "An error occurred: $_"
+                }}
             }}
         }}"""
         run_powershell(ps_script)
