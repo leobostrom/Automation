@@ -35,15 +35,14 @@ def add_computer():
     for VMName, ip in vm.items():
         configure_vm_network(VMName, ip)
         print(f"Setting '{ip}' for '{VMName}' ")
-    time.sleep(20)
+        time.sleep(20)
 
+        for VMName, ip in vm.items():
+            web_server(VMName)
 
-    for VMName, ip in vm.items():
-        web_server(VMName)
-
-    for vm in vm_list[1:]:
-        print(vm)
-        config_nlb(nlb_ip, vm, nlb_master)
+    for vm in vm_list:
+                print(vm)
+                config_nlb(nlb_ip, vm, nlb_master)
 
 
 def config_nlb(nlb_ip, vm, nlb_master):
@@ -51,23 +50,20 @@ def config_nlb(nlb_ip, vm, nlb_master):
         $User = "{username}"
         $PWord = ConvertTo-SecureString -String "{password}" -AsPlainText -Force
         $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $PWord
-        $NLB_IP = "{nlb_ip}"
-        $VMName = "{vm}"
-        $NLB_Master = "{nlb_master}"
-
-         {{
-            Invoke-Command -VMName $VMName -Credential $Credential -ScriptBlock {{
-                if ($using:VMName -eq $using:NLB_Master) {{
-                    # NLB Configuration for NLB_Master
-                    New-NlbCluster -InterfaceName "Ethernet" -ClusterName "NLBCluster" -ClusterPrimaryIP $using:NLB_IP -OperationMode Multicast
+        Invoke-Command -VMName {vm} -Credential $Credential -ScriptBlock {{
+            if ("{vm}" -eq "{nlb_master}") {{
+                # NLB Configuration for NLB_Master
+                New-NlbCluster -InterfaceName "Ethernet" -ClusterName "NLBCluster" -ClusterPrimaryIP {nlb_ip} -OperationMode Multicast
                     
-                }} else {{
-                    # NLB Configuration for other VMs
-                    Get-NlbCluster $using:NLB_Master | Add-NlbClusterNode -NewNodeName $using:VMName -NewNodeInterface "Ethernet"    
-                }}
+         }} else {{
+                # NLB Configuration for other VMs
+                    Get-NlbCluster {nlb_master} | Add-NlbClusterNode -NewNodeName {vm} -NewNodeInterface "Ethernet"    
+            }}
                 
             }}
-        }}"""
+        """
+
+        
         run_powershell(ps_script)
         
 def create_vm(VMName):
