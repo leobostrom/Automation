@@ -44,32 +44,23 @@ def add_computer():
     config_nlb(nlb_ip, vm_list, nlb_master)
 
 def config_nlb(nlb_ip, vm_list, nlb_master):
-    if isinstance(vm_list, dict):
-        vm_list = [vm_list]
     for vm in vm_list:
-        vms = vm
-        run_powershell(ps_scripts)
-    ps_scripts = f"""
-    $User = "{username}"
-    $PWord = ConvertTo-SecureString -String "{password}" -AsPlainText -Force
-    $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $PWord
-    $NLB_IP = "{nlb_ip}"
-    $VMList = "{vms}"
-    $NLB_Master = "{nlb_master}"
+        ps_script = f"""
+        $User = "{username}"
+        $PWord = ConvertTo-SecureString -String "{password}" -AsPlainText -Force
+        $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $PWord
+        $NLB_IP = "{nlb_ip}"
+        $VMName = "{vm}"
+        $NLB_Master = "{nlb_master}"
 
-     {{
-        Invoke-Command -VMName $VMName -Credential $Credential -ScriptBlock {{
-            # NLB Configuration for each VM
-            New-NlbCluster -InterfaceName "Ethernet" -ClusterName "NLBCluster" -ClusterPrimaryIP $using:NLB_IP -OperationMode Multicast
-            Get-NlbCluster $using:NLB_Master | Add-NlbClusterNode -NewNodeName $using:VMName -NewNodeInterface "Ethernet"
-            
-            # Additional NLB Configuration for each VM (Modify as needed)
-            # Example: Add-NlbClusterPortRule -ClusterName "NLBCluster" -Name "Rule1" -Protocol "TCP" -Mode MultipleHost -Affinity Single
-        }}
-    }}"""
-    
-    # Execute the PowerShell script
-    run_powershell(ps_scripts)
+         {{
+            Invoke-Command -VMName $VMName -Credential $Credential -ScriptBlock {{
+                # NLB Configuration for each VM
+                New-NlbCluster -InterfaceName "Ethernet" -ClusterName "NLBCluster" -ClusterPrimaryIP $using:NLB_IP -OperationMode Multicast
+                Get-NlbCluster $using:NLB_Master | Add-NlbClusterNode -NewNodeName $using:VMName -NewNodeInterface "Ethernet"
+            }}
+        }}"""
+        run_powershell(ps_script)
         
 def create_vm(VMName):
     
