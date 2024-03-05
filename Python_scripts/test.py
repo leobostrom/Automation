@@ -9,7 +9,7 @@ import subprocess
 def add_computer(): 
     vm = {}
     num_vms = int(input("Enter the number of VMs to create: "))
-    nlb_ip = input("Enter new cluster ipaddress: ")
+    nlb_ip = input("Enter new cluster IP-address: ")
     
     for _ in range(num_vms):
         VMName = input("Enter a VM name: ")
@@ -37,12 +37,12 @@ def add_computer():
         print(f"Setting '{ip}' for '{VMName}' ")
         time.sleep(20)
 
-        for VMName, ip in vm.items():
-            web_server(VMName)
+    for VMName, ip in vm.items():
+        web_server(VMName)
 
     for vm in vm_list:
-                print(vm)
-                config_nlb(nlb_ip, vm, nlb_master)
+        print(vm)
+        config_nlb(nlb_ip, vm, nlb_master)
 
 
 def config_nlb(nlb_ip, vm, nlb_master):
