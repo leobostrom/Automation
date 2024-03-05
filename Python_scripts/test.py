@@ -41,14 +41,14 @@ def add_computer():
     for VMName, ip in vm.items():
         web_server(VMName)
 
-    config_nlb(VMName, ip, nlb_ip, vm_list, nlb_master)
+    config_nlb(nlb_ip, vm_list, nlb_master)
 
 def config_nlb(nlb_ip, vm_list, nlb_master):
     if isinstance(vm_list, dict):
         vm_list = [vm_list]
     for vm in vm_list:
         vms = vm
-        run_powershell(ps_script)
+        run_powershell(ps_scripts)
     ps_scripts = f"""
     $User = "{username}"
     $PWord = ConvertTo-SecureString -String "{password}" -AsPlainText -Force
@@ -69,16 +69,6 @@ def config_nlb(nlb_ip, vm_list, nlb_master):
     }}"""
     
     # Execute the PowerShell script
-    run_powershell(ps_scripts)
-
-
-    # Execute the PowerShell script
-    run_powershell(ps_scripts)
-
-    
-    # Execute the PowerShell script
-    run_powershell(ps_scripts)
-
     run_powershell(ps_scripts)
         
 def create_vm(VMName):
