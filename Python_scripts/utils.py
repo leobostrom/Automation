@@ -20,53 +20,28 @@ def list_vm():
     vm_info_index = show_list(powershell_command, headers)
     return vm_info_index
 
+def show_list(powershell_command, headers):
+    # Run the PowerShell command
+    result = subprocess.run(['powershell', '-Command', powershell_command], capture_output=True, text=True)
+
+    # Convert the JSON result to a Python dictionary
+    vm_info = json.loads(result.stdout)
+
+    # If vm_info is a dictionary, convert it to a list with one element
+    if isinstance(vm_info, dict):
+        vm_info = [vm_info]
+
+    # Add index to each element in the list
+    vm_info_index = [(i+1, *vm.values()) for i, vm in enumerate(vm_info)]
+
+    # Display data as a table using tabulate
+    print(tabulate(vm_info_index, headers=headers, tablefmt="fancy_grid"))
+    return vm_info_index
+
 def select():
     vm_info_index = list_vm()
     selected_vm = select_vm(vm_info_index)
     return selected_vm
-
-def create_one_vm():
-    VMName = input("Enter a VM name: ")
-    create_vm(VMName)
-    print(f"Virtual machine {VMName} created successfully.")
-
-def create_more_vm():
-    num_vms = int(input("Enter the number of VMs to create: "))
-    for _ in range(num_vms):
-        VMName = input("Enter a VM name: ")
-        create_vm(VMName)
-        print("Creating Virtual machine...")
-        time.sleep(10)
-        ps_scripts = f"Start-VM -Name {VMName}"
-        run_powershell(ps_scripts)
-        time.sleep(30)
-        print(f"Virtual machine {VMName} created successfully.")
-        ip_address = configure_vm_network(VMName)
-        time.sleep(5)
-        print(f"IP address have been sucessfully set {ip_address}")
-        print("Installing Microsoft Internet Information Services (IIS)")
-        web_server(VMName)
-        print("Installation sucessfull")
-
-
-
-    
-
-
-    
-        
-def web_server(VMName):     
-        
-    ps_scripts = f"""
-    $User = "{username}"
-    $PWord = ConvertTo-SecureString -String "{password}" -AsPlainText -Force
-    $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $PWord
-
-    Invoke-Command -VMName {VMName} -Credential $Credential -ScriptBlock {{
-    Install-WindowsFeature -Name Web-Server -IncludeManagementTools
-    Install-WindowsFeature -Name NLB -IncludeManagementTools
-}}"""
-    run_powershell(ps_scripts)
 
 def create_vm(VMName):
     
@@ -88,24 +63,43 @@ def create_vm(VMName):
     for command in ps_scripts:
         run_powershell(command)
 
-def show_list(powershell_command, headers):
-    # Run the PowerShell command
-    result = subprocess.run(['powershell', '-Command', powershell_command], capture_output=True, text=True)
+def create_one_vm():
+    VMName = input("Enter a VM name: ")
+    create_vm(VMName)
+    print(f"Virtual machine {VMName} created successfully.")
+    ps_scripts = f"Start-VM -Name {VMName}"
+    run_powershell(ps_scripts)
 
-    # Convert the JSON result to a Python dictionary
-    vm_info = json.loads(result.stdout)
+def create_more_vm():
+    num_vms = int(input("Enter the number of VMs to create: "))
+    for _ in range(num_vms):
+        VMName = input("Enter a VM name: ")
+        create_vm(VMName)
+        print("Creating Virtual machine...")
+        time.sleep(10)
+        ps_scripts = f"Start-VM -Name {VMName}"
+        run_powershell(ps_scripts)
+        time.sleep(30)
+        print(f"Virtual machine {VMName} created successfully.")
+        ip_address = configure_vm_network(VMName)
+        time.sleep(5)
+        print(f"IP address have been sucessfully set {ip_address}")
+        print("Installing Microsoft Internet Information Services (IIS)")
+        web_server(VMName)
+        print("Installation sucessfull")
 
-    # If vm_info is a dictionary, convert it to a list with one element
-    if isinstance(vm_info, dict):
-        vm_info = [vm_info]
+def web_server(VMName):     
+        
+    ps_scripts = f"""
+    $User = "{username}"
+    $PWord = ConvertTo-SecureString -String "{password}" -AsPlainText -Force
+    $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $PWord
 
-    # Add index to each element in the list
-    vm_info_index = [(i+1, *vm.values()) for i, vm in enumerate(vm_info)]
-
-    # Display data as a table using tabulate
-    print(tabulate(vm_info_index, headers=headers, tablefmt="fancy_grid"))
-    return vm_info_index
-
+    Invoke-Command -VMName {VMName} -Credential $Credential -ScriptBlock {{
+    Install-WindowsFeature -Name Web-Server -IncludeManagementTools
+    Install-WindowsFeature -Name NLB -IncludeManagementTools
+}}"""
+    run_powershell(ps_scripts)
 
 def select_vm(vm_info_index):
     # Allow the user to select an object
@@ -127,18 +121,20 @@ def is_valid_ip(ip):
     except ValueError:
         return False
 
+def set_ip():
+    ip = input("Enter ip address: ")
+
+    while True:
+        ip_address = ip
+        if is_valid_ip(ip_address):
+            return ip
+        else:
+            print("Invalid IP address. Please enter a valid IP address.")
+            break
+
 def configure_vm_network(VMName, ip):
     print(f"Configuring VM '{VMName}'...")
-    
-    #while True:
-    #    ip_address = ip
-    #    if is_valid_ip(ip_address):
-    #        print(f"Setting '{ip_address}' for '{vm_name}' ")
-    #        break  # bryt loopen om en giltig IP-adress anges
-    #    else:
-    #        print("Invalid IP address. Please enter a valid IP address.")
-    
-    
+
     ps_script = f'''
         $User = "{username}"
         $PWord = ConvertTo-SecureString -String "{password}" -AsPlainText -Force
@@ -161,12 +157,8 @@ def configure_vm_network(VMName, ip):
     '''
     run_powershell(ps_script)
 
-    
-
 def run_powershell(ps_script):
     subprocess.run(['powershell', '-Command', ps_script], capture_output=True)
-
-
 
 def remove_vm(user_choice):
     vm_name = user_choice
@@ -295,8 +287,6 @@ def manage_vm_checkpoints(vm_name):
             break
         else:
             print("Invalid checkpoint action. Please enter a valid action.")
-
-
 
 def exit_menu():
     print("\nExiting the Menu...")
