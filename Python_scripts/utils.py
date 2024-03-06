@@ -276,7 +276,7 @@ def manage_vm_checkpoints(vm_name):
             subprocess.run(["powershell.exe", "-Command", f'Restore-VMCheckpoint -VMName {vm_name}'])
             print("Checkpoint restored.")
         elif checkpoint_action == 3:
-            powershell_command = "Get-VMSnapshot -VMName WindowsSSS | Select-Object Name, @{Name='CreationTime';Expression={$_.CreationTime.ToString('yyyy-MM-dd HH:mm:ss')}} | ConvertTo-Json -Compress"
+            powershell_command = f"Get-VMSnapshot -VMName {vm_name} "+"| Select-Object Name, @{Name='CreationTime';Expression={$_.CreationTime.ToString('yyyy-MM-dd HH:mm:ss')}} | ConvertTo-Json -Compress"
             headers = ["Index", "Checkpoint Name", "Creation Time"]
             show_list(powershell_command, headers)
         elif checkpoint_action == 4:
