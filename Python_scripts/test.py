@@ -19,8 +19,6 @@ def add_computer():
     print(vm_list)
     nlb_master = next(iter(vm.keys()))
     print(nlb_master)
-    time.sleep(20)
-
     
     for VMName, ip in vm.items():
         print(f"Creating Virtual machine: {VMName}")
@@ -29,13 +27,13 @@ def add_computer():
         print(f"Starting: {VMName}")
         ps_scripts = f"Start-VM -Name {VMName}"
         run_powershell(ps_scripts)
-    print("Waiting for Hyper-V to set up virtual machines")
+    print("Waiting for Virtual Machines to set up Windows Server 2022")
     time.sleep(120)
     
     for VMName, ip in vm.items():
         configure_vm_network(VMName, ip)
-        print(f"Setting '{ip}' for '{VMName}' ")
-        time.sleep(20)
+        print(f"Setting up network configuration for'{VMName}' : '{ip}' ")
+        time.sleep(5)
 
     for VMName, ip in vm.items():
         web_server(VMName)
@@ -54,14 +52,15 @@ def config_nlb(nlb_ip, vm, nlb_master):
         Invoke-Command -VMName {vm} -Credential $Credential -ScriptBlock {{
             if ("{vm}" -eq "{nlb_master}") {{
                 # NLB Configuration for NLB_Master
-                New-NlbCluster -InterfaceName "Ethernet" -ClusterName "NLBCluster" -ClusterPrimaryIP {nlb_ip} -OperationMode Multicast
-                Set-NetFirewallRule -DisplayGroup "File And Printer Sharing" -Enabled True -Profile Any    
+                New-NlbCluster -InterfaceName "Ethernet" -ClusterName "nlbcluster.local" -ClusterPrimaryIP {nlb_ip} -OperationMode Multicast    
+                Get-NlbClusterPortRule | Remove-NlbClusterPortRule -Force
+                Get-NlbCluster | Add-NlbClusterPortRule -StartPort 80 -EndPort 80 -Affinity None
          }} else {{
                 # NLB Configuration for other VMs
-                Get-NlbCluster {nlb_master} | Add-NlbClusterNode -NewNodeName {vm} -NewNodeInterface "Ethernet"
-                Set-NetFirewallRule -DisplayGroup "File And Printer Sharing" -Enabled True -Profile Any    
+                Get-NlbCluster {nlb_master} | Add-NlbClusterNode -NewNodeName {vm} -NewNodeInterface "Ethernet"    
             }}
-                
+            Set-NetFirewallRule -DisplayGroup "File And Printer Sharing" -Enabled True -Profile Any    
+            
             }}
         """
 
