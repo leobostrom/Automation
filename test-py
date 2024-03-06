@@ -1,17 +1,44 @@
-from tabulate import tabulate
-from subprocess import Popen, PIPE
-import re
+import subprocess
+def create_website():
+    # HTML-innehållet för webbsidan
+    html_content = f"""
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>ML Test Site</title>
+        </head>
+        <body>
+            <h1>Welcome to our test website!</h1>
+            <p>You are connected to server: Test</p>
+        </body>
+        </html>
+    """
 
-# Kör din get-vmsnapshots kommando
-cmd = "get-vmsnapshots"  # Ersätt med ditt faktiska kommando
-process = Popen(cmd, stdout=PIPE, shell=True)
-stdout, _ = process.communicate()
+    # Sökväg till målfilen på servern
+    remote_path = f'\\\\vm4\\c$\\inetpub\\wwwroot\\index.html'
 
-# Läs in data från stdout
-data = stdout.decode().split('\n')
+    try:
+        # Kontrollera om filen redan finns, om inte, skapa den
+        ps_command_check_file = f"""
+        if (-not (Test-Path "{remote_path}")) {{
+            New-Item -Path "{remote_path}" -ItemType "file" -Force | Out-Null
+        }}
+        """
 
-# Skapa en lista av listor där varje inre lista representerar en rad i tabellen
-table_data = [re.split(r'\s+', row) for row in data]
+        # Konstruera PowerShell-kommandot med variabler för användarnamn och lösenord
+        powershell_command = f"""
+              
+        {ps_command_check_file}
+        Set-Content -Path {remote_path} -Value '{html_content}'
+        """
 
-# Skriv ut tabellen med tabulate
-print(tabulate(table_data, headers='firstrow', tablefmt='fancy_grid'))
+        # Kör PowerShell-kommandot med subprocess
+        subprocess.run(["powershell.exe", "-Command", powershell_command], check=True)
+
+        print(f"Webbsida skapad på vm")
+
+    except subprocess.CalledProcessError as e:
+        print(f"Misslyckades med att skapa webbsida på ")
+create_website()
