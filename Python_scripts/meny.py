@@ -28,10 +28,6 @@ def is_admin():
     except:
         return False
 
-def pause():
-    input('\nPress ENTER to continue...')
-    clear_screen()
-
 def main_menu():
     print(main_menu_text)
 
@@ -62,21 +58,33 @@ def main():
             pause()
         elif option == 4:
             selected_vm = select()
+            if selected_vm == None:
+                clear_screen()
+                main()
             ip = set_ip()
             configure_vm_network(selected_vm, ip)
             pause()
         elif option == 5:
             selected_vm = select()
+            if selected_vm == None:
+                clear_screen()
+                main()
             remove_vm(selected_vm)
             list_vm()
             pause()
         elif option == 6:
             selected_vm = select()
+            if selected_vm == None:
+                clear_screen()
+                main()
             manage_vm(selected_vm)
             list_vm()
             pause()
         elif option == 7:
             selected_vm = select()
+            if selected_vm == None:
+                clear_screen()
+                main()
             manage_vm_checkpoints(selected_vm)
             pause()
         elif option == 8:
