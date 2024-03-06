@@ -1,9 +1,11 @@
+import ctypes
 import ipaddress
 import os
 import subprocess
 import json
 from tabulate import tabulate
 import time
+
 
 username = 'administrator'
 password = 'Linux4Ever'
@@ -75,7 +77,7 @@ def create_vm(VMName):
     DataVHD = f"C:\\Production\\VHD\\{VMName}.vhdx"
 
     # PowerShell commands
-    commands = [
+    ps_scripts = [
         f'New-VHD -ParentPath "{MotherVHD}" -Path "{DataVHD}" -Differencing',
         f'New-VM -VHDPath "{DataVHD}" -MemoryStartupBytes {RAM} -Name "{VMName}" -SwitchName "{SwitchName}"',
         f'Set-VM -Name "{VMName}" -ProcessorCount {CPUCount}',
@@ -83,8 +85,8 @@ def create_vm(VMName):
     ]
 
     # Execute PowerShell commands
-    for command in commands:
-        subprocess.run(['powershell', '-Command', command], capture_output=True)
+    for command in ps_scripts:
+        run_powershell(command)
 
 def show_list(powershell_command, headers):
     # Run the PowerShell command
@@ -171,7 +173,7 @@ def remove_vm(user_choice):
     print(f"Removing VM '{vm_name}'")
 
     # Check if the VM is running
-    ps_check_running = f'''
+    ps_scripts = f'''
         $User = "{username}"
         $PWord = ConvertTo-SecureString -String "{password}" -AsPlainText -Force
         $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $PWord
@@ -181,12 +183,12 @@ def remove_vm(user_choice):
         Write-Output $VMStatus
     '''
 
-    result = subprocess.run(["powershell.exe", "-Command", ps_check_running], capture_output=True, text=True)
+    result = run_powershell(ps_scripts)
     vm_status = result.stdout.strip()
 
     if vm_status.lower() == "running":
         print(f"Shutting down VM '{vm_name}'")
-        ps_shutdown_vm = f'''
+        ps_scripts = f'''
             $User = "{username}"
             $PWord = ConvertTo-SecureString -String "{password}" -AsPlainText -Force
             $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $PWord
@@ -195,10 +197,10 @@ def remove_vm(user_choice):
             Stop-VM -Name $VMName -Force
         '''
 
-        subprocess.run(["powershell.exe", "-Command", ps_shutdown_vm])
+        run_powershell(ps_scripts)
 
     # remove the VM
-    ps_remove_vm = f'''
+    ps_scripts = f'''
         $User = "{username}"
         $PWord = ConvertTo-SecureString -String "{password}" -AsPlainText -Force
         $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $PWord
@@ -207,7 +209,7 @@ def remove_vm(user_choice):
         Remove-VM -Name $VMName -Force
     '''
 
-    subprocess.run(["powershell.exe", "-Command", ps_remove_vm])
+    run_powershell(ps_scripts)
     print(f"VM '{vm_name}' removed.")
 
 def manage_vm(user_choice):
@@ -217,7 +219,7 @@ def manage_vm(user_choice):
     # Choose an action (1 for start, 2 for stop, 3 for restart, 4 to exit)
     action = int(input("Enter 1 to start, 2 to stop, 3 to restart the VM, or 4 to exit: "))
 
-    ps_script = f'''
+    ps_scripts = f'''
         $User = "{username}"
         $PWord = ConvertTo-SecureString -String "{password}" -AsPlainText -Force
         $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $PWord
@@ -233,7 +235,7 @@ def manage_vm(user_choice):
         }}
     '''
 
-    subprocess.run(["powershell.exe", "-Command", ps_script])
+    run_powershell(ps_scripts)
 
 
 def manage_vm_checkpoints_menu(vm_name):

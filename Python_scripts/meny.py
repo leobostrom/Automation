@@ -1,5 +1,6 @@
-import ctypes
 from utils import *
+from enviroment import *
+
 
 main_menu_text = """
  ________________________________________________________
@@ -56,7 +57,7 @@ def main():
             create_one_vm()
             pause()
         elif option == 3:
-            create_more_vm()
+            start_enviroment()
             pause()
         elif option == 4:
             selected_vm = select()

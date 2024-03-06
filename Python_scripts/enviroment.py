@@ -1,12 +1,8 @@
 from utils import *
 from tabulate import tabulate
-from subprocess import Popen, PIPE
-import re
 import subprocess
 
-
-
-def add_computer(): 
+def start_enviroment(): 
     vm = {}
     num_vms = int(input("Enter the number of VMs to create: "))
     nlb_ip = input("Enter new cluster IP-address: ")
@@ -63,8 +59,6 @@ def config_nlb(nlb_ip, vm, nlb_master):
             
             }}
         """
-
-        
         run_powershell(ps_script)
         
 def create_website(vm):
@@ -96,14 +90,14 @@ def create_website(vm):
         """
 
         # Konstruera PowerShell-kommandot med variabler för användarnamn och lösenord
-        powershell_command = f"""
+        ps_scripts = f"""
               
         {ps_command_check_file}
         Set-Content -Path {remote_path} -Value '{html_content}'
         """
 
         # Kör PowerShell-kommandot med subprocess
-        subprocess.run(["powershell.exe", "-Command", powershell_command], check=True)
+        run_powershell(ps_scripts)
 
         print(f"Webbsida skapad på {vm}")
 
@@ -111,30 +105,4 @@ def create_website(vm):
         print(f"Misslyckades med att skapa webbsida på {vm}: {e}")
 
 
-
-def create_vm(VMName):
-    
-    RAM = "4GB"
-    SwitchName = "Internet"
-    CPUCount = 2
-    MotherVHD = "C:\\Production\\VHD\\Motherdisk.vhdx"
-    DataVHD = f"C:\\Production\\VHD\\{VMName}.vhdx"
-
-    # PowerShell commands
-    commands = [
-        f'New-VHD -ParentPath "{MotherVHD}" -Path "{DataVHD}" -Differencing',
-        f'New-VM -VHDPath "{DataVHD}" -MemoryStartupBytes {RAM} -Name "{VMName}" -SwitchName "{SwitchName}"',
-        f'Set-VM -Name "{VMName}" -ProcessorCount {CPUCount}',
-        f'Set-VMMemory "{VMName}" -DynamicMemoryEnabled $true'
-    ]
-
-    # Execute PowerShell commands
-    for command in commands:
-        subprocess.run(['powershell', '-Command', command], capture_output=True)
-        
-    
-
-
-# Call the function to test it
-add_computer()
 
