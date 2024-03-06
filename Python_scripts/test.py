@@ -68,32 +68,40 @@ def config_nlb(nlb_ip, vm, nlb_master):
         run_powershell(ps_script)
         
 def create_website(vm):
-        # HTML-innehållet för webbsidan
+    # HTML-innehållet för webbsidan
     html_content = f"""
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Min enkla webbsida</title>
-    </head>
-    <body>
-        <h1>Välkommen till min enkla webbsida!</h1>
-        <p>Du är ansluten till server: {vm}</p>
-    </body>
-    </html>
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>ML Test Site</title>
+        </head>
+        <body>
+            <h1>Welcome to our test website!</h1>
+            <p>You are connected to server: {vm}</p>
+        </body>
+        </html>
     """
 
     # Sökväg till målfilen på servern
     remote_path = f'\\\\{vm}\\c$\\inetpub\\wwwroot\\index.html'
 
     try:
+        # Kontrollera om filen redan finns, om inte, skapa den
+        ps_command_check_file = f"""
+        if (-not (Test-Path "{remote_path}")) {{
+            New-Item -Path "{remote_path}" -ItemType "file" -Force | Out-Null
+        }}
+        """
+
         # Konstruera PowerShell-kommandot med variabler för användarnamn och lösenord
         powershell_command = f"""
         $User = "{username}"
         $PWord = ConvertTo-SecureString -String "{password}" -AsPlainText -Force
         $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $PWord
         
+        {ps_command_check_file}
         Set-Content -Path "{remote_path}" -Value "{html_content}" -Credential $Credential
         """
 
@@ -104,6 +112,7 @@ def create_website(vm):
 
     except subprocess.CalledProcessError as e:
         print(f"Misslyckades med att skapa webbsida på {vm}: {e}")
+
 
 def create_vm(VMName):
     
