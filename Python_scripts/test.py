@@ -42,9 +42,8 @@ def add_computer():
 
     for vm in vm_list:
         print(vm)
-        create_website(vm)
         config_nlb(nlb_ip, vm, nlb_master)
-
+        create_website(vm)
 
 def config_nlb(nlb_ip, vm, nlb_master):
         ps_script = f"""
@@ -55,10 +54,11 @@ def config_nlb(nlb_ip, vm, nlb_master):
             if ("{vm}" -eq "{nlb_master}") {{
                 # NLB Configuration for NLB_Master
                 New-NlbCluster -InterfaceName "Ethernet" -ClusterName "NLBCluster" -ClusterPrimaryIP {nlb_ip} -OperationMode Multicast
-                    
+                Set-NetFirewallRule -DisplayGroup "File And Printer Sharing" -Enabled True -Profile Public    
          }} else {{
                 # NLB Configuration for other VMs
-                    Get-NlbCluster {nlb_master} | Add-NlbClusterNode -NewNodeName {vm} -NewNodeInterface "Ethernet"    
+                    Get-NlbCluster {nlb_master} | Add-NlbClusterNode -NewNodeName {vm} -NewNodeInterface "Ethernet"
+                    Set-NetFirewallRule -DisplayGroup "File And Printer Sharing" -Enabled True -Profile Public    
             }}
                 
             }}
@@ -85,7 +85,7 @@ def create_website(vm):
     """
 
     # Sökväg till målfilen på servern
-    remote_path = f'\\\\{vm}\\c$\\inetpub\\wwwroot\\index.html'
+    remote_path = f'\\\\{vm}\\c$\\inetpub\\wwwroot\\iisstart.html'
 
     try:
         # Kontrollera om filen redan finns, om inte, skapa den
