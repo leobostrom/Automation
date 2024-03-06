@@ -173,7 +173,7 @@ def remove_vm(user_choice):
     print(f"Removing VM '{vm_name}'")
 
     # Check if the VM is running
-    ps_scripts = f'''
+    ps_check_running = f'''
         $User = "{username}"
         $PWord = ConvertTo-SecureString -String "{password}" -AsPlainText -Force
         $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $PWord
@@ -183,12 +183,12 @@ def remove_vm(user_choice):
         Write-Output $VMStatus
     '''
 
-    result = run_powershell(ps_scripts)
+    result = subprocess.run(["powershell.exe", "-Command", ps_check_running], capture_output=True, text=True)
     vm_status = result.stdout.strip()
 
     if vm_status.lower() == "running":
         print(f"Shutting down VM '{vm_name}'")
-        ps_scripts = f'''
+        ps_shutdown_vm = f'''
             $User = "{username}"
             $PWord = ConvertTo-SecureString -String "{password}" -AsPlainText -Force
             $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $PWord
@@ -197,10 +197,10 @@ def remove_vm(user_choice):
             Stop-VM -Name $VMName -Force
         '''
 
-        run_powershell(ps_scripts)
+        subprocess.run(["powershell.exe", "-Command", ps_shutdown_vm])
 
     # remove the VM
-    ps_scripts = f'''
+    ps_remove_vm = f'''
         $User = "{username}"
         $PWord = ConvertTo-SecureString -String "{password}" -AsPlainText -Force
         $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $PWord
@@ -209,7 +209,7 @@ def remove_vm(user_choice):
         Remove-VM -Name $VMName -Force
     '''
 
-    run_powershell(ps_scripts)
+    subprocess.run(["powershell.exe", "-Command", ps_remove_vm])
     print(f"VM '{vm_name}' removed.")
 
 def manage_vm(user_choice):

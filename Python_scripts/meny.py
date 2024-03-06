@@ -62,8 +62,8 @@ def main():
             pause()
         elif option == 4:
             selected_vm = select()
-            ps_script = configure_vm_network(selected_vm)
-            run_powershell(ps_script)
+            ip = "10.6.67.200"
+            configure_vm_network(selected_vm, ip)
             pause()
         elif option == 5:
             selected_vm = select()
