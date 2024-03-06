@@ -85,7 +85,7 @@ def create_website(vm):
     """
 
     # Sökväg till målfilen på servern
-    remote_path = f'\\\\{vm}\\c$\\inetpub\\wwwroot\\iisstart.html'
+    remote_path = f'\\\\{vm}\\c$\\inetpub\\wwwroot\\index.html'
 
     try:
         # Kontrollera om filen redan finns, om inte, skapa den
@@ -112,6 +112,7 @@ def create_website(vm):
 
     except subprocess.CalledProcessError as e:
         print(f"Misslyckades med att skapa webbsida på {vm}: {e}")
+
 
 
 def create_vm(VMName):
