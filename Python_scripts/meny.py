@@ -55,6 +55,7 @@ def main():
         elif option == 2:
             list_vm()
             create_one_vm()
+            list_vm()
             pause()
         elif option == 3:
             start_enviroment()

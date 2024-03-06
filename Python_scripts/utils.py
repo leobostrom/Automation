@@ -164,7 +164,7 @@ def configure_vm_network(VMName, ip):
     
 
 def run_powershell(ps_script):
-    subprocess.run(["powershell.exe", "-Command", ps_script])
+    subprocess.run(['powershell', '-Command', ps_script], capture_output=True)
 
 
 
