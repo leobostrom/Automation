@@ -43,6 +43,7 @@ def add_computer():
     for vm in vm_list:
         print(vm)
         config_nlb(nlb_ip, vm, nlb_master)
+        time.sleep(30)
         create_website(vm)
 
 def config_nlb(nlb_ip, vm, nlb_master):
@@ -54,11 +55,11 @@ def config_nlb(nlb_ip, vm, nlb_master):
             if ("{vm}" -eq "{nlb_master}") {{
                 # NLB Configuration for NLB_Master
                 New-NlbCluster -InterfaceName "Ethernet" -ClusterName "NLBCluster" -ClusterPrimaryIP {nlb_ip} -OperationMode Multicast
-                Set-NetFirewallRule -DisplayGroup "File And Printer Sharing" -Enabled True -Profile Public    
+                Set-NetFirewallRule -DisplayGroup "File And Printer Sharing" -Enabled True -Profile Any    
          }} else {{
                 # NLB Configuration for other VMs
-                    Get-NlbCluster {nlb_master} | Add-NlbClusterNode -NewNodeName {vm} -NewNodeInterface "Ethernet"
-                    Set-NetFirewallRule -DisplayGroup "File And Printer Sharing" -Enabled True -Profile Public    
+                Get-NlbCluster {nlb_master} | Add-NlbClusterNode -NewNodeName {vm} -NewNodeInterface "Ethernet"
+                Set-NetFirewallRule -DisplayGroup "File And Printer Sharing" -Enabled True -Profile Any    
             }}
                 
             }}
@@ -97,12 +98,9 @@ def create_website(vm):
 
         # Konstruera PowerShell-kommandot med variabler för användarnamn och lösenord
         powershell_command = f"""
-        $User = "{username}"
-        $PWord = ConvertTo-SecureString -String "{password}" -AsPlainText -Force
-        $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $PWord
-        
+              
         {ps_command_check_file}
-        Set-Content -Path "{remote_path}" -Value "{html_content}" -Credential $Credential
+        Set-Content -Path {remote_path} -Value '{html_content}'
         """
 
         # Kör PowerShell-kommandot med subprocess
