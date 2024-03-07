@@ -20,6 +20,16 @@ def pause():
 
 def list_vm():
     clear_screen()
+    print("""
+          
+  __  __ _      __     ___      _               _   _____         _      ____           _            
+ |  \/  | |     \ \   / (_)_ __| |_ _   _  __ _| | |_   _|__  ___| |_   / ___|___ _ __ | |_ ___ _ __ 
+ | |\/| | |      \ \ / /| | '__| __| | | |/ _` | |   | |/ _ \/ __| __| | |   / _ \ '_ \| __/ _ \ '__|
+ | |  | | |___    \ V / | | |  | |_| |_| | (_| | |   | |  __/\__ \ |_  | |__|  __/ | | | ||  __/ |   
+ |_|  |_|_____|    \_/  |_|_|   \__|\__,_|\__,_|_|   |_|\___||___/\__|  \____\___|_| |_|\__\___|_|   
+
+
+""")
     powershell_command = "Get-VM | Select-Object Name, @{Name='State';Expression={$_.State.ToString()}}, CPUusage, @{Name='MemoryAssigned';Expression={$_.MemoryAssigned / 1MB}} | ConvertTo-Json -Compress"
     headers = ["Index", "VM Name", "State", "CPU Usage", "Memmory Usage"]
     vm_info_index = show_list(powershell_command, headers)
@@ -191,7 +201,15 @@ def remove_vm(vm_name, vm_status):
 
 
 def configuration_menu(vm_name):
+    clear_screen()
     print(f"""
+          
+  __  __ _      __     ___      _               _   _____         _      ____           _            
+ |  \/  | |     \ \   / (_)_ __| |_ _   _  __ _| | |_   _|__  ___| |_   / ___|___ _ __ | |_ ___ _ __ 
+ | |\/| | |      \ \ / /| | '__| __| | | |/ _` | |   | |/ _ \/ __| __| | |   / _ \ '_ \| __/ _ \ '__|
+ | |  | | |___    \ V / | | |  | |_| |_| | (_| | |   | |  __/\__ \ |_  | |__|  __/ | | | ||  __/ |   
+ |_|  |_|_____|    \_/  |_|_|   \__|\__,_|\__,_|_|   |_|\___||___/\__|  \____\___|_| |_|\__\___|_|    
+
  ________________________________________________________
 |                                                        |
 |               Configuration Management                 |
@@ -248,15 +266,14 @@ def change_configuration(vm_name, vm_status):
         choice = input("Enter your choice: ")
         if choice == '1':
             change_ip_address(vm_name,vm_status)
-        elif choice == '2':
+        elif choice == '2': 
             start_vm(vm_name,vm_status)
         elif choice == '3':
-            
             stop_vm(vm_name,vm_status)
-        elif choice == '4':
-            
+        elif choice == '4':           
             restart_vm(vm_name,vm_status)
         elif choice == '0':
+            clear_screen()
             break
         else:
             print("Invalid choice. Please enter a valid option.")

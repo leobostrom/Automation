@@ -95,4 +95,5 @@ def main():
         main_menu()  # Show main menu again
 
 if __name__ == "__main__":
+    clear_screen()
     main()
