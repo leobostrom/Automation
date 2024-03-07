@@ -2,7 +2,6 @@ from utils import *
 from enviroment import *
 from checkpoint import *
 
-
 main_menu_text = """
  ________________________________________________________
 |                                                        |
@@ -15,11 +14,11 @@ main_menu_text = """
 |  1: Show Virtual Machines                              |
 |  2: Create Virtual Machine                             |
 |  3: Create Test Environment                            |
-|  4: Change Configurations                              |
+|  4: Manage Configurations                              |
 |  5: Delete Virtual Machine                             |
-|  6: Manage Virtual Machines                            |
-|  7: Manage Checkpoints                                 |
-|  8: Exit                                               |
+|  6: Manage Checkpoints                                 |
+|  7: Exit                                               |
+|                                                        |
 |________________________________________________________|
 """
 
@@ -63,11 +62,7 @@ def main():
                 clear_screen()
                 main()
             vm_status = check_vm_status(selected_vm)
-
-            msg = (f"Enter new IP-address for {selected_vm}: ")
-            ip = set_ip(msg)
-            configure_vm_network(selected_vm, ip, vm_status)
-            pause()
+            change_configuration(selected_vm, vm_status)
         elif option == 5:
             selected_vm = select()
             if selected_vm == None:
@@ -82,17 +77,9 @@ def main():
             if selected_vm == None:
                 clear_screen()
                 main()
-            manage_vm(selected_vm)
-            list_vm()
-            pause()
-        elif option == 7:
-            selected_vm = select()
-            if selected_vm == None:
-                clear_screen()
-                main()
             manage_vm_checkpoints(selected_vm)
             pause()
-        elif option == 8:
+        elif option == 7:
             exit_menu()
             exit()
 

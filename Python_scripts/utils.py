@@ -7,6 +7,7 @@ from tabulate import tabulate
 import time
 
 
+
 username = 'administrator'
 password = 'Linux4Ever'
 
@@ -71,42 +72,13 @@ def create_vm(VMName):
     for command in ps_scripts:
         run_powershell(command)
 
-
-def manage_vm(user_choice):
-    vm_name = user_choice
-    print(f"Managing VM '{vm_name}'...")
-
-    # Choose an action (1 for start, 2 for stop, 3 for restart, 4 to exit)
-    action = int(input("Enter 1 to start, 2 to stop, 3 to restart the VM, or 4 to exit: "))
-
-    ps_scripts = f'''
-        $User = "{username}"
-        $PWord = ConvertTo-SecureString -String "{password}" -AsPlainText -Force
-        $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $PWord
-
-        $VMName= "{vm_name}"
-
-        switch ({action}) {{
-            1 {{ Start-VM -Name $VMName }}
-            2 {{ Stop-VM -Name $VMName -Force }}
-            3 {{ Restart-VM -Name $VMName -Force }}
-            4 {{ exit }}
-            default {{ Write-Host "Invalid action. Please enter a valid action." }}
-        }}
-    '''
-
-    run_powershell(ps_scripts)
-
 def create_one_vm():
     VMName = input("Enter a VM name: ")
     create_vm(VMName)
     print(f"Virtual machine {VMName} created successfully.")
-    start_vm(VMName)
+    vm_status = check_vm_status(VMName)
+    start_vm(VMName, vm_status)
  
-def start_vm(VMName):
-    ps_scripts = f"Start-VM -Name {VMName}"
-    run_powershell(ps_scripts)
-
 def web_server(VMName):     
         
     ps_scripts = f"""
@@ -183,21 +155,6 @@ def configure_vm_network(VMName, ip, vm_status):
     '''
     run_powershell(ps_script)
 
-def shutdown_vm(vm_name):
-    print(f"Shutting down VM '{vm_name}'")
-
-    ps_shutdown_vm = f'''
-        $User = "{username}"
-        $PWord = ConvertTo-SecureString -String "{password}" -AsPlainText -Force
-        $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $PWord
-
-        $VMName = "{vm_name}"
-        Stop-VM -Name $VMName -Force
-    '''
-
-    subprocess.run(["powershell.exe", "-Command", ps_shutdown_vm])
-    print(f"VM '{vm_name}' shut down.")
-
 def check_vm_status(vm_name):
     # Check if the VM is running
     ps_check_running = f'''
@@ -214,23 +171,78 @@ def check_vm_status(vm_name):
     vm_status = result.stdout.strip()
     return vm_status
 
-def remove_vm(vm_name, vm_status):
-    print(f"Removing VM '{vm_name}'")
+
+def configuration_menu(vm_name):
+    print(f"""
+ ________________________________________________________
+|                                                        |
+|               Configuration Management                 |
+|________________________________________________________|
+|                                                        |
+| For VM: {vm_name.ljust(46)}|
+|________________________________________________________|
+|                                                        |
+|  1: Change IP-Address                                  |
+|  2: Start VM                                           |
+|  3: Stop VM                                            |
+|  4: Restart VM                                         |
+|  0: Exit                                               |
+|________________________________________________________|
+""")
+
+def change_ip_address(vm_name,vm_status):
+    if vm_status.lower() == "off":
+        start_vm(vm_name)
+        time.sleep(45)
+    msg = f"Enter new IP address for {vm_name}: "
+    ip = set_ip(msg)
+    configure_vm_network(vm_name, ip, vm_status)
+    pause()
+
+def start_vm(vm_name,vm_status):
+    if vm_status.lower() == "off":
+        command = f"Start-VM -Name {vm_name}"
+        run_powershell(command)
+    print(f"Starting VM '{vm_name}'...")
+    pause()
+
+def stop_vm(vm_name,vm_status):
     if vm_status.lower() == "running":
-        shutdown_vm(vm_name)
+        command = f"Stop-VM -Name {vm_name} -Force"
+        run_powershell(command)
+    print(f"Stopping VM '{vm_name}'...")
+    pause()
 
-    # Remove the VM
-    ps_remove_vm = f'''
-        $User = "{username}"
-        $PWord = ConvertTo-SecureString -String "{password}" -AsPlainText -Force
-        $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $PWord
+def restart_vm(vm_name,vm_status):
+    if vm_status.lower() == "running":
+        print(f"Restarting VM '{vm_name}'")
+        command = "Restart-VM -Name {vm_name} -Force"
+        run_powershell(command)
+    elif vm_status.lower() == "off":
+         start_vm(vm_name,vm_status)
+    pause()  
+   
+def change_configuration(vm_name, vm_status):
+    print(f"Managing configuration for VM '{vm_name}'...")
+    pause()
+    while True:
+        configuration_menu(vm_name)
+        choice = input("Enter your choice: ")
+        if choice == '1':
+            change_ip_address(vm_name,vm_status)
+        elif choice == '2':
+            start_vm(vm_name,vm_status)
+        elif choice == '3':
+            
+            stop_vm(vm_name,vm_status)
+        elif choice == '4':
+            
+            restart_vm(vm_name,vm_status)
+        elif choice == '0':
+            break
+        else:
+            print("Invalid choice. Please enter a valid option.")
 
-        $VMName = "{vm_name}"
-        Remove-VM -Name $VMName -Force
-    '''
-
-    subprocess.run(["powershell.exe", "-Command", ps_remove_vm])
-    print(f"VM '{vm_name}' removed.")
 
 def run_powershell(ps_script):
     subprocess.run(['powershell', '-Command', ps_script], capture_output=True)
