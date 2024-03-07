@@ -3,13 +3,17 @@ from tabulate import tabulate
 import subprocess
 
 def start_enviroment(): 
+    clear_screen()
     vm = {}
     num_vms = int(input("Enter the number of VMs to create: "))
-    nlb_ip = input("Enter new cluster IP-address: ")
+    clear_screen()
+    msg = ("Enter new cluster IP-address: ")
+    nlb_ip = set_ip(msg)
     
     for _ in range(num_vms):
         VMName = input("Enter a VM name: ")
-        ip = input("Enter IP-address: ")
+        msg = ("Enter IP-address: ")
+        ip = set_ip(msg)
         vm[VMName] = ip
     vm_list = list(vm.keys())
     print(vm_list)
@@ -27,7 +31,8 @@ def start_enviroment():
     time.sleep(120)
     
     for VMName, ip in vm.items():
-        configure_vm_network(VMName, ip)
+        vm_status = check_vm_status(VMName)
+        configure_vm_network(VMName, ip, vm_status)
         print(f"Setting up network configuration for'{VMName}' : '{ip}' ")
         time.sleep(5)
 

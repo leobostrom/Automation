@@ -61,15 +61,19 @@ def main():
             if selected_vm == None:
                 clear_screen()
                 main()
-            ip = set_ip()
-            configure_vm_network(selected_vm, ip)
+            vm_status = check_vm_status(selected_vm)
+
+            msg = (f"Enter new IP-address for {selected_vm}: ")
+            ip = set_ip(msg)
+            configure_vm_network(selected_vm, ip, vm_status)
             pause()
         elif option == 5:
             selected_vm = select()
             if selected_vm == None:
                 clear_screen()
                 main()
-            remove_vm(selected_vm)
+            vm_status = check_vm_status(selected_vm)
+            remove_vm(selected_vm, vm_status)
             list_vm()
             pause()
         elif option == 6:

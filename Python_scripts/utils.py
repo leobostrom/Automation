@@ -101,6 +101,9 @@ def create_one_vm():
     VMName = input("Enter a VM name: ")
     create_vm(VMName)
     print(f"Virtual machine {VMName} created successfully.")
+    start_vm(VMName)
+ 
+def start_vm(VMName):
     ps_scripts = f"Start-VM -Name {VMName}"
     run_powershell(ps_scripts)
 
@@ -143,17 +146,21 @@ def is_valid_ip(ip):
     except ValueError:
         return False
 
-def set_ip():
+def set_ip(msg):
     while True:
-        ip_address = input("Enter IP address: ")
+        ip_address = input(msg)
         if is_valid_ip(ip_address):
             return ip_address
         else:
             print("Invalid IP address. Please enter a valid IP address.")
 
-def configure_vm_network(VMName, ip):
+def configure_vm_network(VMName, ip, vm_status):
     print(f"Configuring VM '{VMName}'...")
-
+    if vm_status.lower() == "off":
+        print("Strarting VM")
+        start_vm(VMName)
+        time.sleep(45)
+    
     ps_script = f'''
         $User = "{username}"
         $PWord = ConvertTo-SecureString -String "{password}" -AsPlainText -Force
@@ -176,10 +183,22 @@ def configure_vm_network(VMName, ip):
     '''
     run_powershell(ps_script)
 
-def remove_vm(user_choice):
-    vm_name = user_choice
-    print(f"Removing VM '{vm_name}'")
+def shutdown_vm(vm_name):
+    print(f"Shutting down VM '{vm_name}'")
 
+    ps_shutdown_vm = f'''
+        $User = "{username}"
+        $PWord = ConvertTo-SecureString -String "{password}" -AsPlainText -Force
+        $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $PWord
+
+        $VMName = "{vm_name}"
+        Stop-VM -Name $VMName -Force
+    '''
+
+    subprocess.run(["powershell.exe", "-Command", ps_shutdown_vm])
+    print(f"VM '{vm_name}' shut down.")
+
+def check_vm_status(vm_name):
     # Check if the VM is running
     ps_check_running = f'''
         $User = "{username}"
@@ -193,21 +212,14 @@ def remove_vm(user_choice):
 
     result = subprocess.run(["powershell.exe", "-Command", ps_check_running], capture_output=True, text=True)
     vm_status = result.stdout.strip()
+    return vm_status
 
+def remove_vm(vm_name, vm_status):
+    print(f"Removing VM '{vm_name}'")
     if vm_status.lower() == "running":
-        print(f"Shutting down VM '{vm_name}'")
-        ps_shutdown_vm = f'''
-            $User = "{username}"
-            $PWord = ConvertTo-SecureString -String "{password}" -AsPlainText -Force
-            $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $PWord
+        shutdown_vm(vm_name)
 
-            $VMName = "{vm_name}"
-            Stop-VM -Name $VMName -Force
-        '''
-
-        subprocess.run(["powershell.exe", "-Command", ps_shutdown_vm])
-
-    # remove the VM
+    # Remove the VM
     ps_remove_vm = f'''
         $User = "{username}"
         $PWord = ConvertTo-SecureString -String "{password}" -AsPlainText -Force
@@ -219,7 +231,6 @@ def remove_vm(user_choice):
 
     subprocess.run(["powershell.exe", "-Command", ps_remove_vm])
     print(f"VM '{vm_name}' removed.")
-
 
 def run_powershell(ps_script):
     subprocess.run(['powershell', '-Command', ps_script], capture_output=True)
