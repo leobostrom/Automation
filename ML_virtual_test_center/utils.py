@@ -63,11 +63,38 @@ def select():
     selected_vm = select_vm(vm_info_index)
     return selected_vm
 
-def create_vm(VMName):
+
+def list_vm_configurations():
+    print("VM Configurations:")
+    print("1. Small (4GB RAM, 2 cores)")
+    print("2. Medium (6GB RAM, 3 cores)")
+    print("3. Large (8GB RAM, 4 cores)")
+    print("4. Custom settings")
+    choice = input("Enter the number corresponding to the desired VM configuration: ")
+    return choice
+
+def select_vm_configuration():
+    choice = list_vm_configurations()
+    if choice == '1':
+        return "Small", "4GB", 2
+    elif choice == '2':
+        return "Medium", "6GB", 3
+    elif choice == '3':
+        return "Large", "8GB", 4
+    elif choice == '4':
+        ram = input("Enter RAM size (e.g., 4GB): ")
+        cores = int(input("Enter number of CPU cores: "))
+        return "Custom", ram, cores
+    else:
+        print("Invalid choice. Please choose a valid option.")
+        return None, None, None
+
+
+def create_vm(VMName, ram, cores):
     
-    RAM = "4GB"
+    RAM = {ram}
     SwitchName = "Internet"
-    CPUCount = 2
+    CPUCount = {cores}
     MotherVHD = "C:\\Production\\VHD\\Motherdisk.vhdx"
     DataVHD = f"C:\\Production\\VHD\\{VMName}.vhdx"
 
@@ -84,8 +111,9 @@ def create_vm(VMName):
 
 def create_one_vm():
     VMName = input("Enter a VM name: ")
-    create_vm(VMName)
-    print(f"Virtual machine {VMName} created successfully.")
+    configuration_name, ram, cores = select_vm_configuration()
+    create_vm(VMName, ram, cores)
+    print(f"Virtual machine {VMName} created successfully with {configuration_name} configuration.")
     vm_status = check_vm_status(VMName)
     start_vm(VMName, vm_status)
  
