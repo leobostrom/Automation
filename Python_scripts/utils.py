@@ -171,6 +171,24 @@ def check_vm_status(vm_name):
     vm_status = result.stdout.strip()
     return vm_status
 
+def remove_vm(vm_name, vm_status):
+    print(f"Removing VM '{vm_name}'")
+    if vm_status.lower() == "running":
+        stop_vm(vm_name,vm_status)
+
+    # Remove the VM
+    ps_remove_vm = f'''
+        $User = "{username}"
+        $PWord = ConvertTo-SecureString -String "{password}" -AsPlainText -Force
+        $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $PWord
+
+        $VMName = "{vm_name}"
+        Remove-VM -Name $VMName -Force
+    '''
+
+    subprocess.run(["powershell.exe", "-Command", ps_remove_vm])
+    print(f"VM '{vm_name}' removed.")
+
 
 def configuration_menu(vm_name):
     print(f"""
