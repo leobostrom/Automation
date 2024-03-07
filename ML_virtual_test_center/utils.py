@@ -30,8 +30,44 @@ def list_vm():
 
 
 """)
-    powershell_command = "Get-VM | Select-Object Name, @{Name='State';Expression={$_.State.ToString()}}, CPUusage, @{Name='MemoryAssigned';Expression={$_.MemoryAssigned / 1MB}} | ConvertTo-Json -Compress"
-    headers = ["Index", "VM Name", "State", "CPU Usage", "Memmory Usage"]
+    #powershell_command = "Get-VM | Select-Object Name, @{Name='State';Expression={$_.State.ToString()}}, CPUusage, NumberOfCores, @{Name='MemoryAssigned';Expression={$_.MemoryAssigned / 1MB}}, @{Name='StartupRAM';Expression={$_.MemoryStartup / 1MB}} | ConvertTo-Json -Compress"
+
+    powershell_command = """
+        $VMs = Get-VM
+        $VMInfo = @()
+        foreach ($VM in $VMs) {
+            $Cores = Get-VMProcessor -VMName $VM.Name
+            $CoreCount = $Cores.Count
+            $NetworkAdapter = Get-VMNetworkAdapter -VMName $VM.Name
+            $IPAddresses = $NetworkAdapter.IPAddresses
+
+            # Skapa en lista för IPv4-adresser
+            $IPv4Addresses = @()
+
+            # Loopa igenom varje IP-adress och filtrera ut IPv4-adresser
+            foreach ($IP in $IPAddresses) {
+                if ($IP -match '\d+\.\d+\.\d+\.\d+') {
+                    $IPv4Addresses += $IP
+                }
+            }
+            $IPAddress1 = $IPv4Addresses[0]
+            $IPAddress2 = if ($IPv4Addresses.Length -gt 1) { $IPv4Addresses[1] } else { $null }
+            $VMProperties = [PSCustomObject]@{
+                'Name' = $VM.Name
+                'State' = $VM.State.ToString()
+                'NumberOfCores' = $CoreCount
+                'StartupRAM' = $VM.MemoryStartup / 1MB
+                'CPUusage' = $VM.CPUusage
+                'MemoryAssigned' = $VM.MemoryAssigned / 1MB
+                'IPAddress1' = $IPAddress1
+                'IPAddress2' = $IPAddress2
+            }
+            $VMInfo += $VMProperties
+        }
+        $VMInfo | ConvertTo-Json -Compress
+    """
+
+    headers = ["Index", "VM Name", "State", "vCores", "Max RAM", "CPU Usage", "Memmory Usage", "IPv4-address 1", "IPv4-address 2"]
     vm_info_index = show_list(powershell_command, headers)
     return vm_info_index
 
@@ -92,17 +128,15 @@ def select_vm_configuration():
 
 def create_vm(VMName, ram, cores):
     
-    RAM = {ram}
     SwitchName = "Internet"
-    CPUCount = {cores}
     MotherVHD = "C:\\Production\\VHD\\Motherdisk.vhdx"
     DataVHD = f"C:\\Production\\VHD\\{VMName}.vhdx"
 
     # PowerShell commands
     ps_scripts = [
         f'New-VHD -ParentPath "{MotherVHD}" -Path "{DataVHD}" -Differencing',
-        f'New-VM -VHDPath "{DataVHD}" -MemoryStartupBytes {RAM} -Name "{VMName}" -SwitchName "{SwitchName}"',
-        f'Set-VM -Name "{VMName}" -ProcessorCount {CPUCount}',
+        f'New-VM -VHDPath "{DataVHD}" -MemoryStartupBytes {ram} -Name "{VMName}" -SwitchName "{SwitchName}"',
+        f'Set-VM -Name "{VMName}" -ProcessorCount {cores}',
         f'Set-VMMemory "{VMName}" -DynamicMemoryEnabled $true'
     ]
     # Execute PowerShell commands

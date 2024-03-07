@@ -16,13 +16,12 @@ def start_enviroment():
         ip = set_ip(msg)
         vm[VMName] = ip
     vm_list = list(vm.keys())
-    print(vm_list)
+    configuration_name, ram, cores = select_vm_configuration()
     nlb_master = next(iter(vm.keys()))
-    print(nlb_master)
     
     for VMName, ip in vm.items():
         print(f"Creating Virtual machine: {VMName}")
-        create_vm(VMName)
+        create_vm(VMName, ram, cores)
         time.sleep(1)
         print(f"Starting: {VMName}")
         ps_scripts = f"Start-VM -Name {VMName}"
