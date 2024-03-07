@@ -1,5 +1,6 @@
 from utils import *
 from enviroment import *
+from checkpoint import *
 
 
 main_menu_text = """
