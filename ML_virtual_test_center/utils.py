@@ -101,11 +101,26 @@ def select():
 
 
 def list_vm_configurations():
-    print("VM Configurations:")
-    print("1. Small (4GB RAM, 2 cores)")
-    print("2. Medium (6GB RAM, 3 cores)")
-    print("3. Large (8GB RAM, 4 cores)")
-    print("4. Custom settings")
+    clear_screen()
+    print("""
+          
+  __  __ _      __     ___      _               _   _____         _      ____           _            
+ |  \/  | |     \ \   / (_)_ __| |_ _   _  __ _| | |_   _|__  ___| |_   / ___|___ _ __ | |_ ___ _ __ 
+ | |\/| | |      \ \ / /| | '__| __| | | |/ _` | |   | |/ _ \/ __| __| | |   / _ \ '_ \| __/ _ \ '__|
+ | |  | | |___    \ V / | | |  | |_| |_| | (_| | |   | |  __/\__ \ |_  | |__|  __/ | | | ||  __/ |   
+ |_|  |_|_____|    \_/  |_|_|   \__|\__,_|\__,_|_|   |_|\___||___/\__|  \____\___|_| |_|\__\___|_|    
+
+ ________________________________________________________
+|                                                        |
+|               VM Configurations                        |
+|________________________________________________________|
+|                                                        |
+|  1: Small (4GB RAM, 2 cores)                           |
+|  2: Medium (6GB RAM, 3 cores)                          |
+|  3: Large (8GB RAM, 4 cores)                           |
+|  4: Custom settings                                    |
+|________________________________________________________|
+""")
     choice = input("Enter the number corresponding to the desired VM configuration: ")
     return choice
 
