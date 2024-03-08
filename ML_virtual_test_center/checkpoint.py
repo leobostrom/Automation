@@ -72,9 +72,14 @@ def remove_checkpoint(vm_name):
     clear_screen()
     checkpoint_name = select_checkpoint(vm_name)
     if checkpoint_name:
-        subprocess.run(["powershell.exe", "-Command", f'Remove-VMSnapshot -VMName {vm_name} -Name "{checkpoint_name}"'])
-        print(f"Checkpoint '{checkpoint_name}' removed.")
-        pause()
+        try:
+            subprocess.run(["powershell.exe", "-Command", f'Remove-VMSnapshot -VMName {vm_name} -Name "{checkpoint_name}"'], check=True)
+            print(f"Checkpoint '{checkpoint_name}' removed successfully.")
+        except subprocess.CalledProcessError as e:
+            print(f"Error: Failed to remove checkpoint '{checkpoint_name}': {e}")
+    else:
+        print("No checkpoint selected.")
+    pause()
 
 def manage_vm_checkpoints(vm_name):
     print(f"Managing checkpoints for VM '{vm_name}'...")

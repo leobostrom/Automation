@@ -73,14 +73,14 @@ def main():
             vm_status = check_vm_status(selected_vm)
             change_configuration(selected_vm, vm_status)
         elif option == 5:
-            selected_vm = select()
-            if selected_vm == None:
-                clear_screen()
-                main()
-            vm_status = check_vm_status(selected_vm)
-            remove_vm(selected_vm, vm_status)
-            list_vm()
-            pause()
+            while True:  # Loop for removing VMs
+                selected_vm = select()
+                if selected_vm == None:
+                    clear_screen()
+                    main()
+                vm_status = check_vm_status(selected_vm)
+                remove_vm(selected_vm, vm_status)
+                pause()
         elif option == 6:
             selected_vm = select()
             if selected_vm == None:

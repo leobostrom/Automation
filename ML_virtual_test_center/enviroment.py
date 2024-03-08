@@ -26,14 +26,14 @@ def start_enviroment():
         print(f"Starting: {VMName}")
         ps_scripts = f"Start-VM -Name {VMName}"
         run_powershell(ps_scripts)
-    print("Waiting for Virtual Machines to set up Windows Server 2022")
+    print("Waiting for Windows Server 2022 to install")
     time.sleep(120)
     
     for VMName, ip in vm.items():
         vm_status = check_vm_status(VMName)
         configure_vm_network(VMName, ip, vm_status)
         print(f"Setting up network configuration for'{VMName}' : '{ip}' ")
-        time.sleep(5)
+        time.sleep(10)
 
     for VMName, ip in vm.items():
         web_server(VMName)
@@ -41,8 +41,9 @@ def start_enviroment():
     for vm in vm_list:
         print(vm)
         config_nlb(nlb_ip, vm, nlb_master)
-        time.sleep(30)
+        time.sleep(50)
         create_website(vm)
+
 
 def config_nlb(nlb_ip, vm, nlb_master):
         ps_script = f"""
@@ -66,7 +67,7 @@ def config_nlb(nlb_ip, vm, nlb_master):
         run_powershell(ps_script)
         
 def create_website(vm):
-    # HTML-innehållet för webbsidan
+    # HTML content for webpage.
     html_content = f"""
         <!DOCTYPE html>
         <html lang="en">
@@ -82,31 +83,31 @@ def create_website(vm):
         </html>
     """
 
-    # Sökväg till målfilen på servern
+    # Path to the target file on the server
     remote_path = f'\\\\{vm}\\c$\\inetpub\\wwwroot\\index.html'
 
     try:
-        # Kontrollera om filen redan finns, om inte, skapa den
+        # Check if the file already exists; if not, create it.
         ps_command_check_file = f"""
         if (-not (Test-Path "{remote_path}")) {{
             New-Item -Path "{remote_path}" -ItemType "file" -Force | Out-Null
         }}
         """
 
-        # Konstruera PowerShell-kommandot med variabler för användarnamn och lösenord
+        # Create PowerShell command.
         ps_scripts = f"""
               
         {ps_command_check_file}
         Set-Content -Path {remote_path} -Value '{html_content}'
         """
 
-        # Kör PowerShell-kommandot med subprocess
+        # Run the PowerShell command with subprocess
         run_powershell(ps_scripts)
 
-        print(f"Webbsida skapad på {vm}")
+        print(f"Web page created on {vm} with Network Load Balancing")
 
     except subprocess.CalledProcessError as e:
-        print(f"Misslyckades med att skapa webbsida på {vm}: {e}")
+        print(f"Failed to create web page on {vm}: {e}")
 
 
 

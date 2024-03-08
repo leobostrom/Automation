@@ -68,14 +68,14 @@ def list_vm(vm_name=None):
                 'CPUusage' = $VM.CPUusage
                 'MemoryAssigned' = $VM.MemoryAssigned / 1MB
                 'IPAddress1' = $IPAddress1
-                'IPAddress2' = $IPAddress2
+                'Cluster IP' = $IPAddress2
             }
             $VMInfo += $VMProperties
         }
         $VMInfo | ConvertTo-Json -Compress
     """
 
-    headers = ["Index", "VM Name", "State", "vCores", "Max RAM", "CPU Usage", "Memmory Usage", "IPv4-address 1", "IPv4-address 2"]
+    headers = ["Index", "VM Name", "State", "vCores", "Max RAM", "CPU Usage", "Memmory Usage", "IPv4-address 1", "Cluster IP"]
     vm_info_index = show_list(powershell_command, headers)
     return vm_info_index
 
@@ -298,22 +298,36 @@ def check_vm_status(vm_name):
     return vm_status
 
 def remove_vm(vm_name, vm_status):
-    print(f"Removing VM '{vm_name}'")
-    if vm_status.lower() == "running":
-        stop_vm(vm_name,vm_status)
+    
+    # Ask for user confirmation
+    confirmation = input(f"Are you sure you want to remove the VM '{vm_name}'? (yes/no): ").strip().lower()
+    
+    if confirmation == "yes":
+        if vm_status.lower() == "running":
+            stop_vm(vm_name, vm_status)
+        
+        # Remove the VM
+        ps_remove_vm = f'''
+            $User = "{username}"
+            $PWord = ConvertTo-SecureString -String "{password}" -AsPlainText -Force
+            $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $PWord
 
-    # Remove the VM
-    ps_remove_vm = f'''
-        $User = "{username}"
-        $PWord = ConvertTo-SecureString -String "{password}" -AsPlainText -Force
-        $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $PWord
+            $VMName = "{vm_name}"
+            Remove-VM -Name $VMName -Force
+        '''
 
-        $VMName = "{vm_name}"
-        Remove-VM -Name $VMName -Force
-    '''
+        run_powershell(ps_remove_vm)
+        print(f"VM '{vm_name}' removed.")
 
-    subprocess.run(["powershell.exe", "-Command", ps_remove_vm])
-    print(f"VM '{vm_name}' removed.")
+        # Remove the VHD file
+        vhd_path = f'C:\\Production\\VHD\\{vm_name}.vhdx'
+        if os.path.exists(vhd_path):
+            os.remove(vhd_path)
+            print(f"VHD file '{vhd_path}' removed.")
+        else:
+            print(f"VHD file '{vhd_path}' not found.")
+    else:
+        print("VM removal cancelled.")
 
 
 def configuration_menu(vm_name):
@@ -351,7 +365,7 @@ def change_ip_address(vm_name,vm_status):
 def start_vm(vm_name,vm_status):
     if vm_status.lower() == "off":
         command = f"Start-VM -Name {vm_name}"
-        run_powershell(command)
+        subprocess.run(['powershell', '-Command', command])
     print(f"Starting VM '{vm_name}'...")
     pause()
 
@@ -395,7 +409,7 @@ def change_configuration(vm_name, vm_status):
 
 
 def run_powershell(ps_script):
-    subprocess.run(['powershell', '-Command', ps_script], capture_output=True)
+    subprocess.run(['powershell', '-Command', ps_script], stdout=subprocess.PIPE)
 
 def exit_menu():
     print("\nExiting the Menu...")
