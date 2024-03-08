@@ -30,6 +30,7 @@ def list_vm():
 
 
 """)
+    
     #powershell_command = "Get-VM | Select-Object Name, @{Name='State';Expression={$_.State.ToString()}}, CPUusage, NumberOfCores, @{Name='MemoryAssigned';Expression={$_.MemoryAssigned / 1MB}}, @{Name='StartupRAM';Expression={$_.MemoryStartup / 1MB}} | ConvertTo-Json -Compress"
 
     powershell_command = """
@@ -139,6 +140,46 @@ def select_vm_configuration():
     else:
         print("Invalid choice. Please choose a valid option.")
         return None, None, None
+
+def change_vm_configuration():
+    # List available VMs and allow user to select one
+    selected_vm = select()
+
+    if selected_vm:
+        vm_name = selected_vm
+
+        # Check if VM is running
+        vm_status = check_vm_status(vm_name)
+
+        # List available VM configurations and allow user to select one
+        configuration_name, ram, cores = select_vm_configuration()
+
+        if configuration_name and ram and cores:
+            # If VM is running, stop it
+            if vm_status.lower() == "running":
+                stop_vm(vm_name, vm_status)
+
+            # Update VM configuration
+            update_vm_configuration(vm_name, ram, cores)
+            print(f"Virtual machine {vm_name} reconfigured successfully with {configuration_name} configuration.")
+
+            # If the VM was originally running, start it again
+            if vm_status.lower() == "running":
+                start_vm(vm_name, vm_status)
+    else:
+        print("No VM selected.")
+
+def update_vm_configuration(vm_name, ram, cores):
+    # PowerShell commands to update VM configuration
+    ps_scripts = [
+        f'Set-VMMemory "{vm_name}" -DynamicMemoryEnabled $true',
+        f'Set-VM -Name "{vm_name}" -MemoryStartupBytes {ram}',
+        f'Set-VM -Name "{vm_name}" -ProcessorCount {cores}'
+    ]
+
+    # Execute PowerShell commands
+    for command in ps_scripts:
+        run_powershell(command)
 
 
 def create_vm(VMName, ram, cores):
@@ -292,13 +333,14 @@ def configuration_menu(vm_name):
 |               Configuration Management                 |
 |________________________________________________________|
 |                                                        |
-| For VM: {vm_name.ljust(46)}|
+| Selected VM: {vm_name.ljust(41)} |
 |________________________________________________________|
 |                                                        |
 |  1: Change IP-Address                                  |
-|  2: Start VM                                           |
-|  3: Stop VM                                            |
-|  4: Restart VM                                         |
+|  2: Change VM Configuration                            |
+|  3: Start VM                                           |
+|  4: Stop VM                                            |
+|  5: Restart VM                                         |
 |  0: Exit                                               |
 |________________________________________________________|
 """)
