@@ -119,7 +119,7 @@ def select_vm_configuration():
         return "Large", "8GB", 4
     elif choice == '4':
         ram = input("Enter RAM size (e.g., 4GB): ")
-        cores = int(input("Enter number of CPU cores: "))
+        cores = int(input("Enter number of CPU cores (max 4): "))
         return "Custom", ram, cores
     else:
         print("Invalid choice. Please choose a valid option.")
