@@ -6,19 +6,10 @@ import json
 from tabulate import tabulate
 import time
 
-
-
 username = 'administrator'
 password = 'Linux4Ever'
 
-def clear_screen():
-    os.system('cls' if os.name == 'nt' else 'clear')
-
-def pause():
-    input('\nPress ENTER to continue...')
-    clear_screen()
-
-def list_vm():
+def ml_text():
     clear_screen()
     print("""
           
@@ -28,13 +19,29 @@ def list_vm():
  | |  | | |___    \ V / | | |  | |_| |_| | (_| | |   | |  __/\__ \ |_  | |__|  __/ | | | ||  __/ |   
  |_|  |_|_____|    \_/  |_|_|   \__|\__,_|\__,_|_|   |_|\___||___/\__|  \____\___|_| |_|\__\___|_|   
 
-
 """)
-    
-    #powershell_command = "Get-VM | Select-Object Name, @{Name='State';Expression={$_.State.ToString()}}, CPUusage, NumberOfCores, @{Name='MemoryAssigned';Expression={$_.MemoryAssigned / 1MB}}, @{Name='StartupRAM';Expression={$_.MemoryStartup / 1MB}} | ConvertTo-Json -Compress"
 
-    powershell_command = """
-        $VMs = Get-VM
+def clear_screen():
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+def pause():
+    input('\nPress ENTER to continue...')
+    clear_screen()
+
+def list_vm(vm_name=None):
+    clear_screen()
+    ml_text()
+    
+    if vm_name:
+        powershell_command = f"""
+            $VMs = Get-VM -Name "{vm_name}"
+        """
+    else:
+        powershell_command = """
+            $VMs = Get-VM
+        """
+
+    powershell_command += """
         $VMInfo = @()
         foreach ($VM in $VMs) {
             $Cores = Get-VMProcessor -VMName $VM.Name
@@ -103,14 +110,8 @@ def select():
 
 def list_vm_configurations():
     clear_screen()
-    print("""
-          
-  __  __ _      __     ___      _               _   _____         _      ____           _            
- |  \/  | |     \ \   / (_)_ __| |_ _   _  __ _| | |_   _|__  ___| |_   / ___|___ _ __ | |_ ___ _ __ 
- | |\/| | |      \ \ / /| | '__| __| | | |/ _` | |   | |/ _ \/ __| __| | |   / _ \ '_ \| __/ _ \ '__|
- | |  | | |___    \ V / | | |  | |_| |_| | (_| | |   | |  __/\__ \ |_  | |__|  __/ | | | ||  __/ |   
- |_|  |_|_____|    \_/  |_|_|   \__|\__,_|\__,_|_|   |_|\___||___/\__|  \____\___|_| |_|\__\___|_|    
-
+    ml_text()
+    print("""   
  ________________________________________________________
 |                                                        |
 |               VM Configurations                        |
@@ -141,10 +142,7 @@ def select_vm_configuration():
         print("Invalid choice. Please choose a valid option.")
         return None, None, None
 
-def change_vm_configuration():
-    # List available VMs and allow user to select one
-    selected_vm = select()
-
+def change_vm_configuration(selected_vm):
     if selected_vm:
         vm_name = selected_vm
 
@@ -320,13 +318,9 @@ def remove_vm(vm_name, vm_status):
 
 def configuration_menu(vm_name):
     clear_screen()
+    ml_text()
+    list_vm(vm_name)
     print(f"""
-          
-  __  __ _      __     ___      _               _   _____         _      ____           _            
- |  \/  | |     \ \   / (_)_ __| |_ _   _  __ _| | |_   _|__  ___| |_   / ___|___ _ __ | |_ ___ _ __ 
- | |\/| | |      \ \ / /| | '__| __| | | |/ _` | |   | |/ _ \/ __| __| | |   / _ \ '_ \| __/ _ \ '__|
- | |  | | |___    \ V / | | |  | |_| |_| | (_| | |   | |  __/\__ \ |_  | |__|  __/ | | | ||  __/ |   
- |_|  |_|_____|    \_/  |_|_|   \__|\__,_|\__,_|_|   |_|\___||___/\__|  \____\___|_| |_|\__\___|_|    
 
  ________________________________________________________
 |                                                        |
@@ -385,11 +379,13 @@ def change_configuration(vm_name, vm_status):
         choice = input("Enter your choice: ")
         if choice == '1':
             change_ip_address(vm_name,vm_status)
-        elif choice == '2': 
+        elif choice == '2':
+            change_vm_configuration(vm_name)
+        elif choice == '3': 
             start_vm(vm_name,vm_status)
-        elif choice == '3':
+        elif choice == '4':
             stop_vm(vm_name,vm_status)
-        elif choice == '4':           
+        elif choice == '5':           
             restart_vm(vm_name,vm_status)
         elif choice == '0':
             clear_screen()
