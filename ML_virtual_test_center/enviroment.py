@@ -15,6 +15,17 @@ def start_enviroment():
         msg = ("Enter IP-address: ")
         ip = set_ip(msg)
         vm[VMName] = ip
+    print("\nConfirm the following configuration:")
+    
+    print(tabulate(vm.items(), headers=["VM Name", "IP Address"]))
+    
+    print(f"Cluster IP-address: {nlb_ip}")
+    confirmation = input("\nIs the configuration correct? (yes/no): ").lower()
+    if confirmation != "yes":
+        print("Configuration canceled.")
+        return
+
+
     vm_list = list(vm.keys())
     configuration_name, ram, cores = select_vm_configuration()
     nlb_master = next(iter(vm.keys()))
