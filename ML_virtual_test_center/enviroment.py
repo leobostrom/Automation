@@ -2,13 +2,25 @@ from utils import *
 from tabulate import tabulate
 import subprocess
 
-def start_enviroment(): 
+
+def start_environment(): 
     clear_screen()
+    ml_text()
+    print("""
+    Welcome to the Test Environment Setup Wizard.
+    This wizard will guide you through the process of setting up your virtual test environment.
+    Please provide the following information to proceed:
+    """) 
+
+    gateway, dns, subnet_mask = handle_network_settings()
+    prefix_length = subnetmask_to_prefix_length(subnet_mask)
+
     vm = {}
     num_vms = int(input("Enter the number of VMs to create: "))
     clear_screen()
     msg = ("Enter new cluster IP-address: ")
     nlb_ip = set_ip(msg)
+    
     
     for _ in range(num_vms):
         VMName = input("Enter a VM name: ")
@@ -19,17 +31,17 @@ def start_enviroment():
     
     print(tabulate(vm.items(), headers=["VM Name", "IP Address"]))
     
+
     print(f"Cluster IP-address: {nlb_ip}")
     confirmation = input("\nIs the configuration correct? (yes/no): ").lower()
     if confirmation != "yes":
         print("Configuration canceled.")
         return
 
-
     vm_list = list(vm.keys())
     configuration_name, ram, cores = select_vm_configuration()
     nlb_master = next(iter(vm.keys()))
-    
+ 
     for VMName, ip in vm.items():
         print(f"Creating Virtual machine: {VMName}")
         create_vm(VMName, ram, cores)
@@ -42,7 +54,7 @@ def start_enviroment():
     
     for VMName, ip in vm.items():
         vm_status = check_vm_status(VMName)
-        configure_vm_network(VMName, ip, vm_status)
+        configure_vm_network(VMName, ip, vm_status, gateway, dns, prefix_length)
         print(f"Setting up network configuration for'{VMName}' : '{ip}' ")
         time.sleep(10)
 
@@ -54,6 +66,7 @@ def start_enviroment():
         config_nlb(nlb_ip, vm, nlb_master)
         time.sleep(50)
         create_website(vm)
+
 
 
 def config_nlb(nlb_ip, vm, nlb_master):

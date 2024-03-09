@@ -28,6 +28,47 @@ def pause():
     input('\nPress ENTER to continue...')
     clear_screen()
 
+
+def ask_change_network_settings():
+    change_settings = input("""
+Do you want to change the default settings for the following network configurations?
+Gateway: 10.6.67.1
+DNS: 10.6.67.2
+Subnet Mask: 255.255.255.0
+
+Enter 'yes' to change the settings, or 'no' to keep the default settings: 
+""")
+    return change_settings.lower() == 'yes'
+
+
+def handle_network_settings():
+    change_settings = ask_change_network_settings()
+
+    if change_settings:
+        gateway = input("Enter new gateway: ")
+        dns = input("Enter new DNS: ")
+        subnet_mask = input("Enter new subnet mask: ")
+    else:
+        gateway = "10.6.67.1"
+        dns = "10.6.67.2"
+        subnet_mask = "255.255.255.0"
+
+    return gateway, dns, subnet_mask
+
+def subnetmask_to_prefix_length(subnet_mask):
+    
+    # Split the subnet mask into octets
+    octets = subnet_mask.split('.')
+    
+    # Create a string representing the binary representation of all octets
+    binary_string = ''.join([bin(int(octet))[2:].zfill(8) for octet in octets])
+    
+    # Count the number of bits that are 1 in the binary string to get the prefix length
+    prefix_length = sum(bit == '1' for bit in binary_string)
+    
+    return prefix_length
+
+
 def list_vm(vm_name=None):
     clear_screen()
     ml_text()
@@ -252,7 +293,7 @@ def set_ip(msg):
         else:
             print("Invalid IP address. Please enter a valid IP address.")
 
-def configure_vm_network(VMName, ip, vm_status):
+def configure_vm_network(VMName, ip, vm_status, dns, gateway, prefix_length):
     print(f"Configuring VM '{VMName}'...")
     if vm_status.lower() == "off":
         print("Strarting VM")
@@ -268,13 +309,14 @@ def configure_vm_network(VMName, ip, vm_status):
         Invoke-Command -VMName $VMName -Credential $Credential -ScriptBlock {{
             $VMName = "{VMName}"      
             $IPAdd = "{ip}"
-            $Gateway = "10.6.67.1"
-            $DNSAdd = "10.6.67.2"
+            $Gateway = "{gateway}"
+            $DNSAdd = "{dns}"
+            $Prefix = "{prefix_length}
             
             Rename-Computer -NewName $VMName -Confirm:$False
             Set-NetIPInterface -InterfaceAlias "Ethernet" -Dhcp Enabled
             Remove-NetRoute -InterfaceAlias "Ethernet" -Confirm:$false
-            New-NetIPAddress -InterfaceAlias "Ethernet" -IPAddress $IPAdd -PrefixLength 24 -DefaultGateway $Gateway
+            New-NetIPAddress -InterfaceAlias "Ethernet" -IPAddress $IPAdd -PrefixLength $Prefix -DefaultGateway $Gateway
             Set-DnsClientServerAddress -InterfaceAlias "Ethernet" -ServerAddresses $DNSAdd
             Restart-Computer
         }}
@@ -359,7 +401,10 @@ def change_ip_address(vm_name,vm_status):
         time.sleep(45)
     msg = f"Enter new IP address for {vm_name}: "
     ip = set_ip(msg)
-    configure_vm_network(vm_name, ip, vm_status)
+    gateway, dns, subnet_mask = handle_network_settings()
+    prefix_length = subnetmask_to_prefix_length(subnet_mask)
+
+    configure_vm_network(vm_name, ip, vm_status, dns, gateway, prefix_length)
     pause()
 
 def start_vm(vm_name,vm_status):

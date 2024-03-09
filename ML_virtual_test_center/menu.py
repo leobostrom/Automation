@@ -61,7 +61,7 @@ def main():
             list_vm()
             create_one_vm()
             list_vm()
-            pause()
+            pause()4
         elif option == 3:
             start_enviroment()
             pause()
