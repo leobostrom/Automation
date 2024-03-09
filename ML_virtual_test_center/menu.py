@@ -1,5 +1,5 @@
 from utils import *
-from enviroment import *
+from environment import *
 from checkpoint import *
 
 main_menu_text = """
@@ -26,6 +26,7 @@ main_menu_text = """
 |  4: Manage Configurations                              |
 |  5: Delete Virtual Machine                             |
 |  6: Manage Checkpoints                                 |
+|                                                        | 
 |  7: Exit                                               |
 |                                                        |
 |________________________________________________________|
@@ -61,9 +62,9 @@ def main():
             list_vm()
             create_one_vm()
             list_vm()
-            pause()4
+            pause()
         elif option == 3:
-            start_enviroment()
+            start_environment()
             pause()
         elif option == 4:
             selected_vm = select()

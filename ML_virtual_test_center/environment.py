@@ -27,12 +27,19 @@ def start_environment():
         msg = ("Enter IP-address: ")
         ip = set_ip(msg)
         vm[VMName] = ip
+    clear_screen()
     print("\nConfirm the following configuration:")
     
     print(tabulate(vm.items(), headers=["VM Name", "IP Address"]))
     
-
-    print(f"Cluster IP-address: {nlb_ip}")
+    print(f"""
+        Cluster IP-address: {nlb_ip}
+        
+        Subnet Mask: {subnet_mask}   
+        Default Gateway: {gateway}
+        DNS: {dns}
+             
+    """)
     confirmation = input("\nIs the configuration correct? (yes/no): ").lower()
     if confirmation != "yes":
         print("Configuration canceled.")

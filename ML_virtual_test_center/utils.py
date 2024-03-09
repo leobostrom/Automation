@@ -304,20 +304,14 @@ def configure_vm_network(VMName, ip, vm_status, dns, gateway, prefix_length):
         $User = "{username}"
         $PWord = ConvertTo-SecureString -String "{password}" -AsPlainText -Force
         $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $PWord
-        $VMName = "{VMName}"
-
-        Invoke-Command -VMName $VMName -Credential $Credential -ScriptBlock {{
-            $VMName = "{VMName}"      
-            $IPAdd = "{ip}"
-            $Gateway = "{gateway}"
-            $DNSAdd = "{dns}"
-            $Prefix = "{prefix_length}
+    
+        Invoke-Command -VMName {VMName} -Credential $Credential -ScriptBlock {{
             
-            Rename-Computer -NewName $VMName -Confirm:$False
+            Rename-Computer -NewName {VMName} -Confirm:$False
             Set-NetIPInterface -InterfaceAlias "Ethernet" -Dhcp Enabled
             Remove-NetRoute -InterfaceAlias "Ethernet" -Confirm:$false
-            New-NetIPAddress -InterfaceAlias "Ethernet" -IPAddress $IPAdd -PrefixLength $Prefix -DefaultGateway $Gateway
-            Set-DnsClientServerAddress -InterfaceAlias "Ethernet" -ServerAddresses $DNSAdd
+            New-NetIPAddress -InterfaceAlias "Ethernet" -IPAddress {ip} -PrefixLength {prefix_length} -DefaultGateway {gateway}
+            Set-DnsClientServerAddress -InterfaceAlias "Ethernet" -ServerAddresses {dns}
             Restart-Computer
         }}
     '''
@@ -386,7 +380,7 @@ def configuration_menu(vm_name):
 | Selected VM: {vm_name.ljust(41)} |
 |________________________________________________________|
 |                                                        |
-|  1: Change IP-Address                                  |
+|  1: Change Network Configuration                                  |
 |  2: Change VM Configuration                            |
 |  3: Start VM                                           |
 |  4: Stop VM                                            |
