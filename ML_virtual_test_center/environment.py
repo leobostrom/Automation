@@ -70,7 +70,7 @@ def start_environment():
         web_server(VMName)
 
     for vm in vm_list:
-        print(f"Setting up Web page and Network Load Balacer for'{VMName}'")
+        print(f"Setting up Web page and Network Load Balacer for'{vm}'")
         config_nlb(nlb_ip, vm, nlb_master)
         time.sleep(50)
         create_website(vm)
