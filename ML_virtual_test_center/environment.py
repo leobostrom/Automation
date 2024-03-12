@@ -40,8 +40,8 @@ def start_environment():
         DNS: {dns}
              
     """)
-    confirmation = input("\nIs the configuration correct? (yes/no): ").lower()
-    if confirmation != "yes":
+    confirmation = input("\nIs the configuration correct? (y/n): ").lower()
+    if confirmation != "y":
         print("Configuration canceled.")
         return
 
@@ -66,6 +66,7 @@ def start_environment():
         time.sleep(10)
 
     for VMName, ip in vm.items():
+        print(f"Installing Internet Information Services and Network Load Balancer'{VMName}'")
         web_server(VMName)
 
     for vm in vm_list:

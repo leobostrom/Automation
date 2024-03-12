@@ -14,7 +14,7 @@ def manage_vm_checkpoints_menu(vm_name):
 |                 Checkpoint Management                  |
 |________________________________________________________|
 |                                                        |
-| For VM: {vm_name.ljust(46)}|
+| Selected VM: {vm_name.ljust(41)} |
 |________________________________________________________|
 |                                                        |
 |  1: Create a checkpoint                                |

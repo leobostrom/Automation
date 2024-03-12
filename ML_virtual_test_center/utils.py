@@ -36,9 +36,9 @@ Gateway: 10.6.67.1
 DNS: 10.6.67.2
 Subnet Mask: 255.255.255.0
 
-Enter 'yes' to change the settings, or 'no' to keep the default settings: 
+Enter 'y' to change the settings, or 'n' to keep the default settings: 
 """)
-    return change_settings.lower() == 'yes'
+    return change_settings.lower() == 'y'
 
 
 def handle_network_settings():
@@ -308,6 +308,7 @@ def configure_vm_network(VMName, ip, vm_status, dns, gateway, prefix_length):
         Invoke-Command -VMName {VMName} -Credential $Credential -ScriptBlock {{
             
             Rename-Computer -NewName {VMName} -Confirm:$False
+            Set-TimeZone -Name 'W. Europe Standard Time' -PassThru
             Set-NetIPInterface -InterfaceAlias "Ethernet" -Dhcp Enabled
             Remove-NetRoute -InterfaceAlias "Ethernet" -Confirm:$false
             New-NetIPAddress -InterfaceAlias "Ethernet" -IPAddress {ip} -PrefixLength {prefix_length} -DefaultGateway {gateway}
@@ -377,10 +378,10 @@ def configuration_menu(vm_name):
 |               Configuration Management                 |
 |________________________________________________________|
 |                                                        |
-| Selected VM: {vm_name.ljust(41)} |
+| Selected VM: {vm_name.ljust(41)}  |
 |________________________________________________________|
 |                                                        |
-|  1: Change Network Configuration                                  |
+|  1: Change Network Configuration                       |
 |  2: Change VM Configuration                            |
 |  3: Start VM                                           |
 |  4: Stop VM                                            |
